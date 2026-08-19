@@ -43,6 +43,9 @@ public class Registration extends BaseEntity
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date eventStartTime;
 
+    /** 赛事状态（0未发布 1报名中 2进行中 3已结束） */
+    private Integer eventStatus;
+
     public Long getId()
     {
         return id;
@@ -131,6 +134,16 @@ public class Registration extends BaseEntity
     public void setEventStartTime(Date eventStartTime)
     {
         this.eventStartTime = eventStartTime;
+    }
+
+    public Integer getEventStatus()
+    {
+        return eventStatus;
+    }
+
+    public void setEventStatus(Integer eventStatus)
+    {
+        this.eventStatus = eventStatus;
     }
 
     @Override

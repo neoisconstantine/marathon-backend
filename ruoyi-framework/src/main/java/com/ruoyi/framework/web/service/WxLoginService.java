@@ -90,4 +90,53 @@ public class WxLoginService
         }
         return openid;
     }
+
+    /** 微信 access_token 接口地址 */
+    private static final String TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token";
+
+    /** 微信手机号快捷验证组件 code 换取手机号接口地址 */
+    private static final String PHONE_NUMBER_URL = "https://api.weixin.qq.com/wxa/business/getuserphonenumber";
+
+    /**
+     * 手机号快捷验证组件 code 换取用户手机号
+     * 注意：该能力要求已认证的非个人主体小程序；未配置 appid 时直接报错，
+     * 前端捕获后应降级为手动输入手机号。
+     *
+     * @param code getPhoneNumber 事件返回的动态令牌
+     * @return 用户手机号
+     */
+    public String getPhoneNumber(String code)
+    {
+        if (StringUtils.isBlank(appid))
+        {
+            throw new ServiceException("未配置小程序appid，无法使用微信手机号快捷填充，请手动输入");
+        }
+        // 1. 获取接口调用凭证 access_token
+        String tokenParam = "grant_type=client_credential&appid=" + appid + "&secret=" + secret;
+        String tokenResult = HttpUtils.sendGet(TOKEN_URL, tokenParam);
+        JSONObject tokenJson = JSON.parseObject(tokenResult);
+        if (tokenJson == null || StringUtils.isBlank(tokenJson.getString("access_token")))
+        {
+            throw new ServiceException("获取access_token失败: "
+                    + (tokenJson == null ? "无响应" : tokenJson.getString("errmsg")));
+        }
+        // 2. code 换取手机号（POST JSON）
+        String accessToken = tokenJson.getString("access_token");
+        String body = "{\"code\":\"" + code + "\"}";
+        String phoneResult = HttpUtils.sendPost(PHONE_NUMBER_URL + "?access_token=" + accessToken, body,
+                "application/json");
+        JSONObject phoneJson = JSON.parseObject(phoneResult);
+        if (phoneJson == null || phoneJson.getIntValue("errcode") != 0)
+        {
+            throw new ServiceException("获取手机号失败: "
+                    + (phoneJson == null ? "无响应" : phoneJson.getString("errmsg")));
+        }
+        JSONObject phoneInfo = phoneJson.getJSONObject("phone_info");
+        String phoneNumber = phoneInfo == null ? null : phoneInfo.getString("purePhoneNumber");
+        if (StringUtils.isBlank(phoneNumber))
+        {
+            throw new ServiceException("获取手机号失败: 响应中无手机号");
+        }
+        return phoneNumber;
+    }
 }

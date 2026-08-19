@@ -1,6 +1,8 @@
 package com.ruoyi.system.mapper;
 
 import java.util.List;
+
+import com.ruoyi.system.domain.vo.HeatRecordVo;
 import org.apache.ibatis.annotations.Param;
 import com.ruoyi.system.domain.PassRecord;
 import com.ruoyi.system.domain.vo.PassArrivalVo;
@@ -68,4 +70,12 @@ public interface PassRecordMapper
      * @return 点位到达时间集合（按号码牌、到达时间升序）
      */
     public List<PassArrivalVo> selectAllArrivalsByEvent(@Param("eventId") Long eventId);
+
+    /**
+     * 查询某赛事各摄像头点位的最早到达记录（热力图用，关联参赛用户姓名）
+     *
+     * @param eventId 赛事ID
+     * @return 各摄像头点位到达记录（按摄像头、最早到达时间升序）
+     */
+    public List<HeatRecordVo> selectHeatRecordsByEvent(@Param("eventId") Long eventId);
 }

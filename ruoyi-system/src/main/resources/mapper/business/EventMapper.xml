@@ -17,40 +17,42 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="status"       column="status"       />
         <result property="coverUrl"     column="cover_url"    />
         <result property="intro"        column="intro"        />
+        <result property="registrationCount" column="registration_count" />
         <result property="createTime"   column="create_time"  />
         <result property="updateTime"   column="update_time"  />
     </resultMap>
     
     <sql id="selectEventVo">
-        select id, name, location, start_time, signup_start, signup_end, total_quota, registered, signup_open, status, cover_url, intro, create_time, update_time 
-		from `event`
+        select e.id, e.name, e.location, e.start_time, e.signup_start, e.signup_end, e.total_quota, e.registered, e.signup_open, e.status, e.cover_url, e.intro, e.create_time, e.update_time,
+               (select count(*) from registration r where r.event_id = e.id and r.status != 2) as registration_count
+		from `event` e
     </sql>
     
     <select id="selectEventById" parameterType="Long" resultMap="EventResult">
         <include refid="selectEventVo"/>
-        where id = #{id}
+        where e.id = #{id}
     </select>
     
     <select id="selectEventList" parameterType="Event" resultMap="EventResult">
         <include refid="selectEventVo"/>
         <where>  
 			<if test="name != null and name != ''">
-				AND name like concat('%', #{name}, '%')
+				AND e.name like concat('%', #{name}, '%')
 			</if>
 			<if test="location != null and location != ''">
-				AND location like concat('%', #{location}, '%')
+				AND e.location like concat('%', #{location}, '%')
 			</if>
 			<if test="startTime != null">
-				AND start_time = #{startTime}
+				AND e.start_time = #{startTime}
 			</if>
 			<if test="signupOpen != null">
-				AND signup_open = #{signupOpen}
+				AND e.signup_open = #{signupOpen}
 			</if>
 			<if test="status != null">
-				AND status = #{status}
+				AND e.status = #{status}
 			</if>
 		</where>
-        order by start_time desc
+        order by e.start_time desc
     </select>
     
     <insert id="insertEvent" parameterType="Event" useGeneratedKeys="true" keyProperty="id">

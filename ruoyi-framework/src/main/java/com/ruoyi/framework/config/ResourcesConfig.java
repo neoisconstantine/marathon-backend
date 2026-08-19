@@ -54,8 +54,14 @@ public class ResourcesConfig implements WebMvcConfigurer
     {
         // 去Redis改造：防重复提交拦截器依赖Redis，暂时停用（保留便于恢复）
         // registry.addInterceptor(repeatSubmitInterceptor).addPathPatterns("/**");
-        // 小程序接口鉴权拦截器（wx-login为登录签发接口，需放行）
-        registry.addInterceptor(wxAuthInterceptor).addPathPatterns("/api/**").excludePathPatterns("/api/auth/wx-login");
+        // 小程序接口鉴权拦截器（公开接口放行：登录/监控/赛事/资讯/赛道轨迹；报名、报名记录、成绩、个人信息需登录）
+        registry.addInterceptor(wxAuthInterceptor).addPathPatterns("/api/**")
+                .excludePathPatterns(
+                        "/api/auth/wx-login",
+                        "/api/monitor/**",
+                        "/api/event/**",
+                        "/api/content/**",
+                        "/api/camera/**");
     }
 
     /**

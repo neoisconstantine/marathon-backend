@@ -67,7 +67,7 @@ spring:
   devtools:
     restart:
       # 热部署开关
-      enabled: true
+      enabled: false
   data:
     # redis 配置（去Redis改造：暂时停用，保留便于恢复）
     # redis:

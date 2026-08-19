@@ -108,5 +108,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         group by bib, camera_id
         order by bib, arriveTime asc
     </select>
+
+    <select id="selectHeatRecordsByEvent" resultType="com.ruoyi.system.domain.vo.HeatRecordVo">
+        select pr.camera_id as cameraId, pr.bib, pr.person_id as personId, p.name as personName, min(pr.pass_time) as arriveTime
+        from pass_record pr
+        left join person p on p.id = pr.person_id
+        where pr.event_id = #{eventId}
+        group by pr.camera_id, pr.bib, pr.person_id, p.name
+        order by pr.camera_id, arriveTime asc
+    </select>
     
 </mapper>

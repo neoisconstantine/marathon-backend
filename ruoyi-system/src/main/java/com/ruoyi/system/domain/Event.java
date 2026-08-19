@@ -48,6 +48,9 @@ public class Event extends BaseEntity
     /** 赛事状态（0未发布 1报名中 2进行中 3已结束） */
     private Integer status;
 
+    /** 有效报名人数（报名表实时统计，排除已退赛；非 event.registered 冗余字段） */
+    private Long registrationCount;
+
     /** 封面图地址 */
     private String coverUrl;
 
@@ -154,6 +157,16 @@ public class Event extends BaseEntity
         this.status = status;
     }
 
+    public Long getRegistrationCount()
+    {
+        return registrationCount;
+    }
+
+    public void setRegistrationCount(Long registrationCount)
+    {
+        this.registrationCount = registrationCount;
+    }
+
     public String getCoverUrl()
     {
         return coverUrl;
@@ -187,6 +200,7 @@ public class Event extends BaseEntity
             .append("registered", getRegistered())
             .append("signupOpen", getSignupOpen())
             .append("status", getStatus())
+            .append("registrationCount", getRegistrationCount())
             .append("coverUrl", getCoverUrl())
             .append("intro", getIntro())
             .append("createBy", getCreateBy())

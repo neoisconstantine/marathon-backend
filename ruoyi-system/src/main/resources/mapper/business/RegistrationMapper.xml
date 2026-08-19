@@ -14,12 +14,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="personPhone"     column="person_phone"     />
         <result property="eventName"       column="event_name"       />
         <result property="eventStartTime"  column="event_start_time" />
+        <result property="eventStatus"     column="event_status"     />
         <result property="createTime"      column="create_time"      />
     </resultMap>
     
     <sql id="selectRegistrationVo">
         select r.id, r.person_id, r.event_id, r.bib, r.status, r.create_time, 
-               p.name as person_name, p.phone as person_phone, e.name as event_name, e.start_time as event_start_time
+               p.name as person_name, p.phone as person_phone, e.name as event_name, e.start_time as event_start_time, e.status as event_status
 		from registration r
         left join person p on r.person_id = p.id
         left join `event` e on r.event_id = e.id
