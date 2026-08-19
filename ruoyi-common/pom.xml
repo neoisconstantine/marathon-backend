@@ -90,10 +90,14 @@
         </dependency>
 
         <!-- redis 缓存操作 -->
+        <!-- 去Redis改造：暂时停用redis依赖（保留便于恢复）。若需恢复，取消注释并恢复
+             被注释的RedisCache/RedisConfig/FastJson2JsonRedisSerializer等类即可 -->
+        <!--
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
+        -->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

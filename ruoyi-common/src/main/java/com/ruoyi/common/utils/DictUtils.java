@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import com.alibaba.fastjson2.JSONArray;
-import com.ruoyi.common.constant.CacheConstants;
+// import com.ruoyi.common.constant.CacheConstants;        // 去Redis改造：原Redis缓存key常量，暂时停用（保留便于恢复）
 import com.ruoyi.common.core.domain.entity.SysDictData;
-import com.ruoyi.common.core.redis.RedisCache;
+// import com.ruoyi.common.core.redis.RedisCache;          // 去Redis改造：原Redis缓存工具类，暂时停用（保留便于恢复）
 import com.ruoyi.common.utils.spring.SpringUtils;
 
 /**
@@ -30,7 +30,8 @@ public class DictUtils
      */
     public static void setDictCache(String key, List<SysDictData> dictDatas)
     {
-        SpringUtils.getBean(RedisCache.class).setCacheObject(getCacheKey(key), dictDatas);
+        // 去Redis改造：原逻辑写入Redis字典缓存，暂时停用（保留便于恢复）
+        // SpringUtils.getBean(RedisCache.class).setCacheObject(getCacheKey(key), dictDatas);
     }
 
     /**
@@ -41,11 +42,12 @@ public class DictUtils
      */
     public static List<SysDictData> getDictCache(String key)
     {
-        JSONArray arrayCache = SpringUtils.getBean(RedisCache.class).getCacheObject(getCacheKey(key));
-        if (StringUtils.isNotNull(arrayCache))
-        {
-            return arrayCache.toList(SysDictData.class);
-        }
+        // 去Redis改造：原逻辑从Redis读取字典缓存，暂时停用（返回null，调用方会直接查数据库）（保留便于恢复）
+        // JSONArray arrayCache = SpringUtils.getBean(RedisCache.class).getCacheObject(getCacheKey(key));
+        // if (StringUtils.isNotNull(arrayCache))
+        // {
+        //     return arrayCache.toList(SysDictData.class);
+        // }
         return null;
     }
 
@@ -192,7 +194,8 @@ public class DictUtils
      */
     public static void removeDictCache(String key)
     {
-        SpringUtils.getBean(RedisCache.class).deleteObject(getCacheKey(key));
+        // 去Redis改造：原逻辑删除Redis字典缓存，暂时停用（保留便于恢复）
+        // SpringUtils.getBean(RedisCache.class).deleteObject(getCacheKey(key));
     }
 
     /**
@@ -200,8 +203,9 @@ public class DictUtils
      */
     public static void clearDictCache()
     {
-        Collection<String> keys = SpringUtils.getBean(RedisCache.class).keys(CacheConstants.SYS_DICT_KEY + "*");
-        SpringUtils.getBean(RedisCache.class).deleteObject(keys);
+        // 去Redis改造：原逻辑清空Redis字典缓存，暂时停用（保留便于恢复）
+        // Collection<String> keys = SpringUtils.getBean(RedisCache.class).keys(CacheConstants.SYS_DICT_KEY + "*");
+        // SpringUtils.getBean(RedisCache.class).deleteObject(keys);
     }
 
     /**
@@ -210,8 +214,9 @@ public class DictUtils
      * @param configKey 参数键
      * @return 缓存键key
      */
-    public static String getCacheKey(String configKey)
-    {
-        return CacheConstants.SYS_DICT_KEY + configKey;
-    }
+    // 去Redis改造：无Redis后不再需要缓存key拼接，原方法暂时停用（保留便于恢复）
+    // public static String getCacheKey(String configKey)
+    // {
+    //     return CacheConstants.SYS_DICT_KEY + configKey;
+    // }
 }

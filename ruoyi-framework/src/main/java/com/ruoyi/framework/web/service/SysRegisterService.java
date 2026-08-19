@@ -2,12 +2,11 @@ package com.ruoyi.framework.web.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.RegisterBody;
-import com.ruoyi.common.core.redis.RedisCache;
+// import com.ruoyi.common.core.redis.RedisCache;       // 去Redis改造：原Redis缓存工具类，暂时停用（保留便于恢复）
 import com.ruoyi.common.exception.user.CaptchaException;
 import com.ruoyi.common.exception.user.CaptchaExpireException;
 import com.ruoyi.common.utils.DateUtils;
@@ -33,8 +32,9 @@ public class SysRegisterService
     @Autowired
     private ISysConfigService configService;
 
-    @Autowired
-    private RedisCache redisCache;
+    // 去Redis改造：原Redis缓存工具类，暂时停用（保留便于恢复）
+    // @Autowired
+    // private RedisCache redisCache;
 
     /**
      * 注册
@@ -45,12 +45,13 @@ public class SysRegisterService
         SysUser sysUser = new SysUser();
         sysUser.setUserName(username);
 
-        // 验证码开关
-        boolean captchaEnabled = configService.selectCaptchaEnabled();
-        if (captchaEnabled)
-        {
-            validateCaptcha(username, registerBody.getCode(), registerBody.getUuid());
-        }
+        // 去Redis改造：验证码依赖Redis存储，暂时停用（保留便于恢复）
+        // // 验证码开关
+        // boolean captchaEnabled = configService.selectCaptchaEnabled();
+        // if (captchaEnabled)
+        // {
+        //     validateCaptcha(username, registerBody.getCode(), registerBody.getUuid());
+        // }
 
         if (StringUtils.isEmpty(username))
         {
@@ -102,16 +103,17 @@ public class SysRegisterService
      */
     public void validateCaptcha(String username, String code, String uuid)
     {
-        String verifyKey = CacheConstants.CAPTCHA_CODE_KEY + StringUtils.nvl(uuid, "");
-        String captcha = redisCache.getCacheObject(verifyKey);
-        redisCache.deleteObject(verifyKey);
-        if (captcha == null)
-        {
-            throw new CaptchaExpireException();
-        }
-        if (!code.equalsIgnoreCase(captcha))
-        {
-            throw new CaptchaException();
-        }
+        // 去Redis改造：验证码校验依赖Redis存储，方法暂时停用（保留便于恢复）
+        // String verifyKey = CacheConstants.CAPTCHA_CODE_KEY + StringUtils.nvl(uuid, "");
+        // String captcha = redisCache.getCacheObject(verifyKey);
+        // redisCache.deleteObject(verifyKey);
+        // if (captcha == null)
+        // {
+        //     throw new CaptchaExpireException();
+        // }
+        // if (!code.equalsIgnoreCase(captcha))
+        // {
+        //     throw new CaptchaException();
+        // }
     }
 }

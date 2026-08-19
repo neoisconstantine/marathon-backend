@@ -1,6 +1,12 @@
 ######################################################################
 # Build Tools
 
+.omo/
+/bin
+.github
+.codegraph
+
+
 .gradle
 /build/
 !gradle/wrapper/gradle-wrapper.jar

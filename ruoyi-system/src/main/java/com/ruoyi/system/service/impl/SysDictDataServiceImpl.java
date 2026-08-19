@@ -68,8 +68,9 @@ public class SysDictDataServiceImpl implements ISysDictDataService
         {
             SysDictData data = selectDictDataById(dictCode);
             dictDataMapper.deleteDictDataById(dictCode);
-            List<SysDictData> dictDatas = dictDataMapper.selectDictDataByType(data.getDictType());
-            DictUtils.setDictCache(data.getDictType(), dictDatas);
+            // 去Redis改造：原逻辑刷新Redis字典缓存，暂时停用
+            // List<SysDictData> dictDatas = dictDataMapper.selectDictDataByType(data.getDictType());
+            // DictUtils.setDictCache(data.getDictType(), dictDatas);
         }
     }
 
@@ -83,11 +84,12 @@ public class SysDictDataServiceImpl implements ISysDictDataService
     public int insertDictData(SysDictData data)
     {
         int row = dictDataMapper.insertDictData(data);
-        if (row > 0)
-        {
-            List<SysDictData> dictDatas = dictDataMapper.selectDictDataByType(data.getDictType());
-            DictUtils.setDictCache(data.getDictType(), dictDatas);
-        }
+        // 去Redis改造：原逻辑刷新Redis字典缓存，暂时停用
+        // if (row > 0)
+        // {
+        //     List<SysDictData> dictDatas = dictDataMapper.selectDictDataByType(data.getDictType());
+        //     DictUtils.setDictCache(data.getDictType(), dictDatas);
+        // }
         return row;
     }
 
@@ -101,11 +103,12 @@ public class SysDictDataServiceImpl implements ISysDictDataService
     public int updateDictData(SysDictData data)
     {
         int row = dictDataMapper.updateDictData(data);
-        if (row > 0)
-        {
-            List<SysDictData> dictDatas = dictDataMapper.selectDictDataByType(data.getDictType());
-            DictUtils.setDictCache(data.getDictType(), dictDatas);
-        }
+        // 去Redis改造：原逻辑刷新Redis字典缓存，暂时停用
+        // if (row > 0)
+        // {
+        //     List<SysDictData> dictDatas = dictDataMapper.selectDictDataByType(data.getDictType());
+        //     DictUtils.setDictCache(data.getDictType(), dictDatas);
+        // }
         return row;
     }
 }

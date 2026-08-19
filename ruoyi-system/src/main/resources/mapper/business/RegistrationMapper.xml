@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.RegistrationMapper">
+    
+    <resultMap type="Registration" id="RegistrationResult">
+    	<id     property="id"              column="id"               />
+        <result property="personId"        column="person_id"        />
+        <result property="eventId"         column="event_id"         />
+        <result property="bib"             column="bib"              />
+        <result property="status"          column="status"           />
+        <result property="personName"      column="person_name"      />
+        <result property="personPhone"     column="person_phone"     />
+        <result property="eventName"       column="event_name"       />
+        <result property="eventStartTime"  column="event_start_time" />
+        <result property="createTime"      column="create_time"      />
+    </resultMap>
+    
+    <sql id="selectRegistrationVo">
+        select r.id, r.person_id, r.event_id, r.bib, r.status, r.create_time, 
+               p.name as person_name, p.phone as person_phone, e.name as event_name, e.start_time as event_start_time
+		from registration r
+        left join person p on r.person_id = p.id
+        left join `event` e on r.event_id = e.id
+    </sql>
+    
+    <select id="selectRegistrationById" parameterType="Long" resultMap="RegistrationResult">
+        <include refid="selectRegistrationVo"/>
+        where r.id = #{id}
+    </select>
+    
+    <select id="selectRegistrationList" parameterType="Registration" resultMap="RegistrationResult">
+        <include refid="selectRegistrationVo"/>
+        <where>  
+			<if test="eventId != null">
+				AND r.event_id = #{eventId}
+			</if>
+			<if test="personId != null">
+				AND r.person_id = #{personId}
+			</if>
+			<if test="bib != null and bib != ''">
+				AND r.bib = #{bib}
+			</if>
+			<if test="status != null">
+				AND r.status = #{status}
+			</if>
+			<if test="personName != null and personName != ''">
+				AND p.name like concat('%', #{personName}, '%')
+			</if>
+		</where>
+        order by r.create_time desc
+    </select>
+    
+    <select id="selectMyRegistrations" parameterType="Long" resultMap="RegistrationResult">
+        <include refid="selectRegistrationVo"/>
+        where r.person_id = #{personId}
+        order by r.create_time desc
+    </select>
+    
+    <select id="selectByPersonAndEvent" resultMap="RegistrationResult">
+        <include refid="selectRegistrationVo"/>
+        where r.person_id = #{personId} and r.event_id = #{eventId} limit 1
+    </select>
+    
+    <insert id="insertRegistration" parameterType="Registration" useGeneratedKeys="true" keyProperty="id">
+        insert into registration (
+			<if test="personId != null">person_id,</if>
+			<if test="eventId != null">event_id,</if>
+			<if test="bib != null and bib != ''">bib,</if>
+			<if test="status != null">status,</if>
+ 			create_time
+        )values(
+			<if test="personId != null">#{personId},</if>
+			<if test="eventId != null">#{eventId},</if>
+			<if test="bib != null and bib != ''">#{bib},</if>
+			<if test="status != null">#{status},</if>
+ 			sysdate()
+		)
+    </insert>
+	 
+    <update id="updateRegistration" parameterType="Registration">
+        update registration 
+        <set>
+            <if test="bib != null">bib = #{bib},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        where id = #{id}
+    </update>
+	
+    <delete id="deleteRegistrationByIds" parameterType="Long">
+        delete from registration where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+        	#{id}
+        </foreach>
+    </delete>
+    
+</mapper>

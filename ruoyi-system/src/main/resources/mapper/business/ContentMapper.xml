@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.ContentMapper">
+    
+    <resultMap type="Content" id="ContentResult">
+    	<id     property="id"         column="id"          />
+        <result property="type"       column="type"        />
+        <result property="title"      column="title"       />
+        <result property="imageData"  column="image_data"  />
+        <result property="imageType"  column="image_type"  />
+        <result property="summary"    column="summary"     />
+        <result property="detail"     column="detail"      />
+        <result property="sort"       column="sort"        />
+        <result property="status"     column="status"      />
+        <result property="startTime"  column="start_time"  />
+        <result property="endTime"    column="end_time"    />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+    
+    <sql id="selectContentVo">
+        select id, type, title, image_data, image_type, summary, detail, sort, status, start_time, end_time, create_time, update_time 
+		from content
+    </sql>
+    
+    <select id="selectContentById" parameterType="Long" resultMap="ContentResult">
+        <include refid="selectContentVo"/>
+        where id = #{id}
+    </select>
+    
+    <select id="selectContentList" parameterType="Content" resultMap="ContentResult">
+        <include refid="selectContentVo"/>
+        <where>  
+			<if test="type != null">
+				AND type = #{type}
+			</if>
+			<if test="title != null and title != ''">
+				AND title like concat('%', #{title}, '%')
+			</if>
+			<if test="status != null">
+				AND status = #{status}
+			</if>
+		</where>
+        order by sort asc, id desc
+    </select>
+    
+    <select id="selectBannerList" resultMap="ContentResult">
+        <include refid="selectContentVo"/>
+        where type = 1 and status = 1 and (start_time is null or start_time &lt;= now()) and (end_time is null or end_time &gt;= now())
+        order by sort asc, id desc
+    </select>
+    
+    <select id="selectNoticeList" resultMap="ContentResult">
+        <include refid="selectContentVo"/>
+        where type = 2 and status = 1 and (start_time is null or start_time &lt;= now()) and (end_time is null or end_time &gt;= now())
+        order by sort asc, id desc
+    </select>
+    
+    <insert id="insertContent" parameterType="Content" useGeneratedKeys="true" keyProperty="id">
+        insert into content (
+			<if test="type != null">type,</if>
+			<if test="title != null and title != ''">title,</if>
+			<if test="imageData != null">image_data,</if>
+			<if test="imageType != null and imageType != ''">image_type,</if>
+			<if test="summary != null">summary,</if>
+			<if test="detail != null">detail,</if>
+			<if test="sort != null">sort,</if>
+			<if test="status != null">status,</if>
+			<if test="startTime != null">start_time,</if>
+			<if test="endTime != null">end_time,</if>
+ 			create_time
+        )values(
+			<if test="type != null">#{type},</if>
+			<if test="title != null and title != ''">#{title},</if>
+			<if test="imageData != null">#{imageData},</if>
+			<if test="imageType != null and imageType != ''">#{imageType},</if>
+			<if test="summary != null">#{summary},</if>
+			<if test="detail != null">#{detail},</if>
+			<if test="sort != null">#{sort},</if>
+			<if test="status != null">#{status},</if>
+			<if test="startTime != null">#{startTime},</if>
+			<if test="endTime != null">#{endTime},</if>
+ 			sysdate()
+		)
+    </insert>
+	 
+    <update id="updateContent" parameterType="Content">
+        update content 
+        <set>
+            <if test="type != null">type = #{type},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="imageData != null">image_data = #{imageData},</if>
+            <if test="imageType != null">image_type = #{imageType},</if>
+            <if test="summary != null">summary = #{summary},</if>
+            <if test="detail != null">detail = #{detail},</if>
+            <if test="sort != null">sort = #{sort},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+ 			update_time = sysdate()
+        </set>
+        where id = #{id}
+    </update>
+	
+    <delete id="deleteContentByIds" parameterType="Long">
+        delete from content where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+        	#{id}
+        </foreach>
+    </delete>
+    
+</mapper>

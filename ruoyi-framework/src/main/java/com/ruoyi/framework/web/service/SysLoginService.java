@@ -7,11 +7,10 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.core.domain.model.LoginUser;
-import com.ruoyi.common.core.redis.RedisCache;
+// import com.ruoyi.common.core.redis.RedisCache;       // 去Redis改造：原Redis缓存工具类，暂时停用（保留便于恢复）
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.exception.user.BlackListException;
 import com.ruoyi.common.exception.user.CaptchaException;
@@ -42,8 +41,9 @@ public class SysLoginService
     @Resource
     private AuthenticationManager authenticationManager;
 
-    @Autowired
-    private RedisCache redisCache;
+    // 去Redis改造：原Redis缓存工具类，暂时停用（保留便于恢复）
+    // @Autowired
+    // private RedisCache redisCache;
     
     @Autowired
     private ISysUserService userService;
@@ -62,8 +62,9 @@ public class SysLoginService
      */
     public String login(String username, String password, String code, String uuid)
     {
-        // 验证码校验
-        validateCaptcha(username, code, uuid);
+        // 去Redis改造：验证码依赖Redis存储，暂时停用（保留便于恢复）
+        // // 验证码校验
+        // validateCaptcha(username, code, uuid);
         // 登录前置校验
         loginPreCheck(username, password);
         // 用户验证
@@ -109,23 +110,24 @@ public class SysLoginService
      */
     public void validateCaptcha(String username, String code, String uuid)
     {
-        boolean captchaEnabled = configService.selectCaptchaEnabled();
-        if (captchaEnabled)
-        {
-            String verifyKey = CacheConstants.CAPTCHA_CODE_KEY + StringUtils.nvl(uuid, "");
-            String captcha = redisCache.getCacheObject(verifyKey);
-            if (captcha == null)
-            {
-                AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, MessageUtils.message("user.jcaptcha.expire")));
-                throw new CaptchaExpireException();
-            }
-            redisCache.deleteObject(verifyKey);
-            if (!code.equalsIgnoreCase(captcha))
-            {
-                AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, MessageUtils.message("user.jcaptcha.error")));
-                throw new CaptchaException();
-            }
-        }
+        // 去Redis改造：验证码校验依赖Redis存储，方法暂时停用（保留便于恢复）
+        // boolean captchaEnabled = configService.selectCaptchaEnabled();
+        // if (captchaEnabled)
+        // {
+        //     String verifyKey = CacheConstants.CAPTCHA_CODE_KEY + StringUtils.nvl(uuid, "");
+        //     String captcha = redisCache.getCacheObject(verifyKey);
+        //     if (captcha == null)
+        //     {
+        //         AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, MessageUtils.message("user.jcaptcha.expire")));
+        //         throw new CaptchaExpireException();
+        //     }
+        //     redisCache.deleteObject(verifyKey);
+        //     if (!code.equalsIgnoreCase(captcha))
+        //     {
+        //         AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, MessageUtils.message("user.jcaptcha.error")));
+        //         throw new CaptchaException();
+        //     }
+        // }
     }
 
     /**

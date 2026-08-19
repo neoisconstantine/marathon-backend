@@ -35,11 +35,12 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
     /**
      * 项目启动时，初始化字典到缓存
      */
-    @PostConstruct
-    public void init()
-    {
-        loadingDictCache();
-    }
+    // 去Redis改造：原逻辑启动时全量加载字典到Redis缓存，暂时停用（保留便于恢复）
+    // @PostConstruct
+    // public void init()
+    // {
+    //     loadingDictCache();
+    // }
 
     /**
      * 根据条件分页查询字典类型
@@ -73,18 +74,20 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
     @Override
     public List<SysDictData> selectDictDataByType(String dictType)
     {
-        List<SysDictData> dictDatas = DictUtils.getDictCache(dictType);
-        if (StringUtils.isNotEmpty(dictDatas))
-        {
-            return dictDatas;
-        }
-        dictDatas = dictDataMapper.selectDictDataByType(dictType);
-        if (StringUtils.isNotEmpty(dictDatas))
-        {
-            DictUtils.setDictCache(dictType, dictDatas);
-            return dictDatas;
-        }
-        return null;
+        // 去Redis改造：原逻辑先读Redis字典缓存，未命中再查库并回填缓存；现直接查询数据库
+        // List<SysDictData> dictDatas = DictUtils.getDictCache(dictType);
+        // if (StringUtils.isNotEmpty(dictDatas))
+        // {
+        //     return dictDatas;
+        // }
+        // dictDatas = dictDataMapper.selectDictDataByType(dictType);
+        // if (StringUtils.isNotEmpty(dictDatas))
+        // {
+        //     DictUtils.setDictCache(dictType, dictDatas);
+        //     return dictDatas;
+        // }
+        // return null;
+        return dictDataMapper.selectDictDataByType(dictType);
     }
 
     /**
@@ -127,7 +130,8 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
                 throw new ServiceException(String.format("%1$s已分配,不能删除", dictType.getDictName()));
             }
             dictTypeMapper.deleteDictTypeById(dictId);
-            DictUtils.removeDictCache(dictType.getDictType());
+            // 去Redis改造：原逻辑删除Redis字典缓存，暂时停用
+            // DictUtils.removeDictCache(dictType.getDictType());
         }
     }
 
@@ -137,13 +141,14 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
     @Override
     public void loadingDictCache()
     {
-        SysDictData dictData = new SysDictData();
-        dictData.setStatus("0");
-        Map<String, List<SysDictData>> dictDataMap = dictDataMapper.selectDictDataList(dictData).stream().collect(Collectors.groupingBy(SysDictData::getDictType));
-        for (Map.Entry<String, List<SysDictData>> entry : dictDataMap.entrySet())
-        {
-            DictUtils.setDictCache(entry.getKey(), entry.getValue().stream().sorted(Comparator.comparing(SysDictData::getDictSort)).collect(Collectors.toList()));
-        }
+        // 去Redis改造：原逻辑全量加载字典到Redis缓存，暂时停用（保留便于恢复）
+        // SysDictData dictData = new SysDictData();
+        // dictData.setStatus("0");
+        // Map<String, List<SysDictData>> dictDataMap = dictDataMapper.selectDictDataList(dictData).stream().collect(Collectors.groupingBy(SysDictData::getDictType));
+        // for (Map.Entry<String, List<SysDictData>> entry : dictDataMap.entrySet())
+        // {
+        //     DictUtils.setDictCache(entry.getKey(), entry.getValue().stream().sorted(Comparator.comparing(SysDictData::getDictSort)).collect(Collectors.toList()));
+        // }
     }
 
     /**
@@ -152,7 +157,8 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
     @Override
     public void clearDictCache()
     {
-        DictUtils.clearDictCache();
+        // 去Redis改造：原逻辑清空Redis字典缓存，暂时停用（保留便于恢复）
+        // DictUtils.clearDictCache();
     }
 
     /**
@@ -161,8 +167,9 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
     @Override
     public void resetDictCache()
     {
-        clearDictCache();
-        loadingDictCache();
+        // 去Redis改造：无缓存可重置，暂时停用（保留便于恢复）
+        // clearDictCache();
+        // loadingDictCache();
     }
 
     /**
@@ -175,10 +182,11 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
     public int insertDictType(SysDictType dict)
     {
         int row = dictTypeMapper.insertDictType(dict);
-        if (row > 0)
-        {
-            DictUtils.setDictCache(dict.getDictType(), null);
-        }
+        // 去Redis改造：原逻辑写入Redis字典缓存，暂时停用
+        // if (row > 0)
+        // {
+        //     DictUtils.setDictCache(dict.getDictType(), null);
+        // }
         return row;
     }
 
@@ -195,11 +203,12 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
         SysDictType oldDict = dictTypeMapper.selectDictTypeById(dict.getDictId());
         dictDataMapper.updateDictDataType(oldDict.getDictType(), dict.getDictType());
         int row = dictTypeMapper.updateDictType(dict);
-        if (row > 0)
-        {
-            List<SysDictData> dictDatas = dictDataMapper.selectDictDataByType(dict.getDictType());
-            DictUtils.setDictCache(dict.getDictType(), dictDatas);
-        }
+        // 去Redis改造：原逻辑更新Redis字典缓存，暂时停用
+        // if (row > 0)
+        // {
+        //     List<SysDictData> dictDatas = dictDataMapper.selectDictDataByType(dict.getDictType());
+        //     DictUtils.setDictCache(dict.getDictType(), dictDatas);
+        // }
         return row;
     }
 

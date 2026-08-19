@@ -69,28 +69,37 @@ spring:
       # 热部署开关
       enabled: true
   data:
-    # redis 配置
-    redis:
-      # 地址
-      host: localhost
-      # 端口，默认为6379
-      port: 6379
-      # 数据库索引
-      database: 0
-      # 密码
-      password:
-      # 连接超时时间
-      timeout: 10s
-      lettuce:
-        pool:
-          # 连接池中的最小空闲连接
-          min-idle: 0
-          # 连接池中的最大空闲连接
-          max-idle: 8
-          # 连接池的最大数据库连接数
-          max-active: 8
-          # #连接池最大阻塞等待时间（使用负值表示没有限制）
-          max-wait: -1ms
+    # redis 配置（去Redis改造：暂时停用，保留便于恢复）
+    # redis:
+    #   # 地址
+    #   host: localhost
+    #   # 端口，默认为6379
+    #   port: 6379
+    #   # 数据库索引
+    #   database: 0
+    #   # 密码
+    #   password:
+    #   # 连接超时时间
+    #   timeout: 10s
+    #   lettuce:
+    #     pool:
+    #       # 连接池中的最小空闲连接
+    #       min-idle: 0
+    #       # 连接池中的最大空闲连接
+    #       max-idle: 8
+    #       # 连接池的最大数据库连接数
+    #       max-active: 8
+    #       # #连接池最大阻塞等待时间（使用负值表示没有限制）
+    #       max-wait: -1ms
+
+# 微信小程序配置
+wx:
+  # 小程序 appid（留空时wx-login使用开发模式：openid = mock_ + code）
+  appid:
+  # 小程序密钥
+  secret:
+  # 小程序token有效期（分钟，默认7天）
+  expireTime: 10080
 
 # token配置
 token:

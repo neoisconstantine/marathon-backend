@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.CameraMapper">
+    
+    <resultMap type="Camera" id="CameraResult">
+    	<id     property="id"        column="id"          />
+        <result property="eventId"   column="event_id"    />
+        <result property="cameraId"  column="camera_id"   />
+        <result property="name"      column="name"        />
+        <result property="location"  column="location"    />
+        <result property="lng"       column="lng"         />
+        <result property="lat"       column="lat"         />
+        <result property="status"    column="status"      />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+    
+    <sql id="selectCameraVo">
+        select id, event_id, camera_id, name, location, lng, lat, status, create_time, update_time from camera
+    </sql>
+    
+    <select id="selectCameraById" parameterType="Long" resultMap="CameraResult">
+        <include refid="selectCameraVo"/>
+        where id = #{id}
+    </select>
+    
+    <select id="selectByEventAndCameraId" resultMap="CameraResult">
+        <include refid="selectCameraVo"/>
+        where event_id = #{eventId} and camera_id = #{cameraId} limit 1
+    </select>
+    
+    <select id="selectCameraList" parameterType="Camera" resultMap="CameraResult">
+        <include refid="selectCameraVo"/>
+        <where>  
+			<if test="eventId != null">
+				AND event_id = #{eventId}
+			</if>
+			<if test="cameraId != null and cameraId != ''">
+				AND camera_id = #{cameraId}
+			</if>
+			<if test="name != null and name != ''">
+				AND name like concat('%', #{name}, '%')
+			</if>
+			<if test="location != null and location != ''">
+				AND location like concat('%', #{location}, '%')
+			</if>
+			<if test="status != null">
+				AND status = #{status}
+			</if>
+		</where>
+        order by id desc
+    </select>
+    
+    <insert id="insertCamera" parameterType="Camera" useGeneratedKeys="true" keyProperty="id">
+        insert into camera (
+			<if test="eventId != null">event_id,</if>
+			<if test="cameraId != null and cameraId != ''">camera_id,</if>
+			<if test="name != null and name != ''">name,</if>
+			<if test="location != null and location != ''">location,</if>
+			<if test="lng != null">lng,</if>
+			<if test="lat != null">lat,</if>
+			<if test="status != null">status,</if>
+ 			create_time
+        )values(
+			<if test="eventId != null">#{eventId},</if>
+			<if test="cameraId != null and cameraId != ''">#{cameraId},</if>
+			<if test="name != null and name != ''">#{name},</if>
+			<if test="location != null and location != ''">#{location},</if>
+			<if test="lng != null">#{lng},</if>
+			<if test="lat != null">#{lat},</if>
+			<if test="status != null">#{status},</if>
+ 			sysdate()
+		)
+    </insert>
+	 
+    <update id="updateCamera" parameterType="Camera">
+        update camera 
+        <set>
+            <if test="eventId != null">event_id = #{eventId},</if>
+            <if test="cameraId != null and cameraId != ''">camera_id = #{cameraId},</if>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="location != null and location != ''">location = #{location},</if>
+            <if test="lng != null">lng = #{lng},</if>
+            <if test="lat != null">lat = #{lat},</if>
+            <if test="status != null">status = #{status},</if>
+ 			update_time = sysdate()
+        </set>
+        where id = #{id}
+    </update>
+	
+    <delete id="deleteCameraById" parameterType="Long">
+        delete from camera where id = #{id}
+    </delete>
+    
+    <delete id="deleteCameraByIds" parameterType="Long">
+        delete from camera where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+        	#{id}
+        </foreach>
+    </delete>
+    
+</mapper>

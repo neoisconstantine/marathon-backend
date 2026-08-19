@@ -1,6 +1,7 @@
 package com.ruoyi.framework.web.service;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -9,10 +10,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import com.ruoyi.common.constant.CacheConstants;
+import com.alibaba.fastjson2.JSON;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.domain.model.LoginUser;
-import com.ruoyi.common.core.redis.RedisCache;
 import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.http.UserAgentUtils;
@@ -23,6 +23,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.HttpServletRequest;
+// import com.ruoyi.common.constant.CacheConstants;        // 去Redis改造：原Redis缓存key常量，暂时停用（保留便于恢复）
+// import com.ruoyi.common.core.redis.RedisCache;          // 去Redis改造：原Redis缓存工具类，暂时停用（保留便于恢复）
 
 /**
  * token验证处理
@@ -52,8 +54,9 @@ public class TokenService
 
     private static final Long MILLIS_MINUTE_TWENTY = 20 * 60 * 1000L;
 
-    @Autowired
-    private RedisCache redisCache;
+    // 去Redis改造：登录用户信息直接放入JWT（无状态），不再使用Redis缓存
+    // @Autowired
+    // private RedisCache redisCache;
 
     /**
      * 获取用户身份信息
@@ -69,11 +72,13 @@ public class TokenService
             try
             {
                 Claims claims = parseToken(token);
-                // 解析对应的权限以及用户信息
-                String uuid = (String) claims.get(Constants.LOGIN_USER_KEY);
-                String userKey = getTokenKey(uuid);
-                LoginUser user = redisCache.getCacheObject(userKey);
-                return user;
+                // 去Redis改造：登录用户信息直接从JWT中解析（不再从Redis读取）
+                // 原逻辑：String uuid = (String) claims.get(Constants.LOGIN_USER_KEY);
+                //         String userKey = getTokenKey(uuid);
+                //         LoginUser user = redisCache.getCacheObject(userKey);
+                //         return user;
+                String loginUserJson = (String) claims.get(Constants.LOGIN_USER_KEY);
+                return JSON.parseObject(loginUserJson, LoginUser.class);
             }
             catch (Exception e)
             {
@@ -88,10 +93,11 @@ public class TokenService
      */
     public void setLoginUser(LoginUser loginUser)
     {
-        if (StringUtils.isNotNull(loginUser) && StringUtils.isNotEmpty(loginUser.getToken()))
-        {
-            refreshToken(loginUser);
-        }
+        // 去Redis改造：无状态JWT，无需设置/刷新Redis缓存
+        // if (StringUtils.isNotNull(loginUser) && StringUtils.isNotEmpty(loginUser.getToken()))
+        // {
+        //     refreshToken(loginUser);
+        // }
     }
 
     /**
@@ -99,11 +105,12 @@ public class TokenService
      */
     public void delLoginUser(String token)
     {
-        if (StringUtils.isNotEmpty(token))
-        {
-            String userKey = getTokenKey(token);
-            redisCache.deleteObject(userKey);
-        }
+        // 去Redis改造：无状态JWT，无需删除Redis缓存（token到期自动失效）
+        // if (StringUtils.isNotEmpty(token))
+        // {
+        //     String userKey = getTokenKey(token);
+        //     redisCache.deleteObject(userKey);
+        // }
     }
 
     /**
@@ -120,7 +127,14 @@ public class TokenService
         refreshToken(loginUser);
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put(Constants.LOGIN_USER_KEY, token);
+        // 去Redis改造：登录用户信息（JSON）直接写入JWT，实现无状态认证
+        // 原逻辑：claims.put(Constants.LOGIN_USER_KEY, token);（仅存uuid，用户信息在Redis中）
+        if (loginUser.getUser() != null)
+        {
+            // 密码哈希不放入JWT
+            loginUser.getUser().setPassword(null);
+        }
+        claims.put(Constants.LOGIN_USER_KEY, JSON.toJSONString(loginUser));
         claims.put(Constants.JWT_USERNAME, loginUser.getUsername());
         return createToken(claims);
     }
@@ -133,12 +147,13 @@ public class TokenService
      */
     public void verifyToken(LoginUser loginUser)
     {
-        long expireTime = loginUser.getExpireTime();
-        long currentTime = System.currentTimeMillis();
-        if (expireTime - currentTime <= MILLIS_MINUTE_TWENTY)
-        {
-            refreshToken(loginUser);
-        }
+        // 去Redis改造：无状态JWT由token自身过期时间控制，无需滑动续期
+        // long expireTime = loginUser.getExpireTime();
+        // long currentTime = System.currentTimeMillis();
+        // if (expireTime - currentTime <= MILLIS_MINUTE_TWENTY)
+        // {
+        //     refreshToken(loginUser);
+        // }
     }
 
     /**
@@ -150,9 +165,10 @@ public class TokenService
     {
         loginUser.setLoginTime(System.currentTimeMillis());
         loginUser.setExpireTime(loginUser.getLoginTime() + expireTime * MILLIS_MINUTE);
+        // 去Redis改造：原逻辑将loginUser缓存到Redis并设置过期时间，现无状态JWT无需缓存
         // 根据uuid将loginUser缓存
-        String userKey = getTokenKey(loginUser.getToken());
-        redisCache.setCacheObject(userKey, loginUser, expireTime, TimeUnit.MINUTES);
+        // String userKey = getTokenKey(loginUser.getToken());
+        // redisCache.setCacheObject(userKey, loginUser, expireTime, TimeUnit.MINUTES);
     }
 
     /**
@@ -178,8 +194,10 @@ public class TokenService
      */
     private String createToken(Map<String, Object> claims)
     {
+        // 去Redis改造：JWT直接设置过期时间（原来靠Redis TTL控制token过期）
         String token = Jwts.builder()
                 .setClaims(claims)
+                .setExpiration(new Date(System.currentTimeMillis() + expireTime * MILLIS_MINUTE))
                 .signWith(SignatureAlgorithm.HS512, secret).compact();
         return token;
     }
@@ -226,10 +244,11 @@ public class TokenService
         return token;
     }
 
-    private String getTokenKey(String uuid)
-    {
-        return CacheConstants.LOGIN_TOKEN_KEY + uuid;
-    }
+    // 去Redis改造：无状态JWT不再需要拼接Redis缓存key，原方法暂时停用（保留便于恢复）
+    // private String getTokenKey(String uuid)
+    // {
+    //     return CacheConstants.LOGIN_TOKEN_KEY + uuid;
+    // }
 
     /**
      * 角色权限变更后，刷新所有持有该角色的在线用户权限
@@ -239,32 +258,33 @@ public class TokenService
      */
     public void refreshPermissionByRoleId(Long roleId, SysPermissionService permissionService)
     {
-        // 扫描所有在线 token
-        String pattern = CacheConstants.LOGIN_TOKEN_KEY + "*";
-        Collection<String> keys = redisCache.keys(pattern);
-        if (keys == null || keys.isEmpty())
-        {
-            return;
-        }
-        for (String key : keys)
-        {
-            LoginUser loginUser = redisCache.getCacheObject(key);
-            if (loginUser == null || loginUser.getUser() == null || loginUser.getUser().isAdmin())
-            {
-                // 管理员拥有所有权限，跳过
-                continue;
-            }
-            // 判断该用户是否拥有此角色
-            boolean hasRole = loginUser.getUser().getRoles() != null
-                    && loginUser.getUser().getRoles().stream().anyMatch(r -> roleId.equals(r.getRoleId()));
-            if (!hasRole)
-            {
-                continue;
-            }
-            // 刷新权限缓存
-            loginUser.setPermissions(permissionService.getMenuPermission(loginUser.getUser()));
-            refreshToken(loginUser);
-            log.info("角色[{}]权限变更，已刷新在线用户[{}]的权限缓存", roleId, loginUser.getUsername());
-        }
+        // 去Redis改造：原逻辑扫描Redis中所有在线token并刷新权限，无Redis后暂时停用（登录用户权限以token生成时为准）
+        // // 扫描所有在线 token
+        // String pattern = CacheConstants.LOGIN_TOKEN_KEY + "*";
+        // Collection<String> keys = redisCache.keys(pattern);
+        // if (keys == null || keys.isEmpty())
+        // {
+        //     return;
+        // }
+        // for (String key : keys)
+        // {
+        //     LoginUser loginUser = redisCache.getCacheObject(key);
+        //     if (loginUser == null || loginUser.getUser() == null || loginUser.getUser().isAdmin())
+        //     {
+        //         // 管理员拥有所有权限，跳过
+        //         continue;
+        //     }
+        //     // 判断该用户是否拥有此角色
+        //     boolean hasRole = loginUser.getUser().getRoles() != null
+        //             && loginUser.getUser().getRoles().stream().anyMatch(r -> roleId.equals(r.getRoleId()));
+        //     if (!hasRole)
+        //     {
+        //         continue;
+        //     }
+        //     // 刷新权限缓存
+        //     loginUser.setPermissions(permissionService.getMenuPermission(loginUser.getUser()));
+        //     refreshToken(loginUser);
+        //     log.info("角色[{}]权限变更，已刷新在线用户[{}]的权限缓存", roleId, loginUser.getUsername());
+        // }
     }
 }

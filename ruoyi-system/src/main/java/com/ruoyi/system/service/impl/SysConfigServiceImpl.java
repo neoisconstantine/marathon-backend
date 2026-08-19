@@ -5,9 +5,9 @@ import java.util.List;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.common.constant.CacheConstants;
+// import com.ruoyi.common.constant.CacheConstants;        // 去Redis改造：原Redis缓存key常量，暂时停用（保留便于恢复）
 import com.ruoyi.common.constant.UserConstants;
-import com.ruoyi.common.core.redis.RedisCache;
+// import com.ruoyi.common.core.redis.RedisCache;          // 去Redis改造：原Redis缓存工具类，暂时停用（保留便于恢复）
 import com.ruoyi.common.core.text.Convert;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.StringUtils;
@@ -26,17 +26,19 @@ public class SysConfigServiceImpl implements ISysConfigService
     @Autowired
     private SysConfigMapper configMapper;
 
-    @Autowired
-    private RedisCache redisCache;
+    // 去Redis改造：原Redis缓存工具类，暂时停用（保留便于恢复）
+    // @Autowired
+    // private RedisCache redisCache;
 
     /**
      * 项目启动时，初始化参数到缓存
      */
-    @PostConstruct
-    public void init()
-    {
-        loadingConfigCache();
-    }
+    // 去Redis改造：原逻辑启动时全量加载参数配置到Redis缓存，暂时停用（保留便于恢复）
+    // @PostConstruct
+    // public void init()
+    // {
+    //     loadingConfigCache();
+    // }
 
     /**
      * 查询参数配置信息
@@ -61,17 +63,18 @@ public class SysConfigServiceImpl implements ISysConfigService
     @Override
     public String selectConfigByKey(String configKey)
     {
-        String configValue = Convert.toStr(redisCache.getCacheObject(getCacheKey(configKey)));
-        if (StringUtils.isNotEmpty(configValue))
-        {
-            return configValue;
-        }
+        // 去Redis改造：原逻辑先读Redis缓存，未命中再查库并回填缓存；现直接查询数据库
+        // String configValue = Convert.toStr(redisCache.getCacheObject(getCacheKey(configKey)));
+        // if (StringUtils.isNotEmpty(configValue))
+        // {
+        //     return configValue;
+        // }
         SysConfig config = new SysConfig();
         config.setConfigKey(configKey);
         SysConfig retConfig = configMapper.selectConfig(config);
         if (StringUtils.isNotNull(retConfig))
         {
-            redisCache.setCacheObject(getCacheKey(configKey), retConfig.getConfigValue());
+            // redisCache.setCacheObject(getCacheKey(configKey), retConfig.getConfigValue());
             return retConfig.getConfigValue();
         }
         return StringUtils.EMPTY;
@@ -115,10 +118,11 @@ public class SysConfigServiceImpl implements ISysConfigService
     public int insertConfig(SysConfig config)
     {
         int row = configMapper.insertConfig(config);
-        if (row > 0)
-        {
-            redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
-        }
+        // 去Redis改造：原逻辑写入Redis缓存，暂时停用
+        // if (row > 0)
+        // {
+        //     redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
+        // }
         return row;
     }
 
@@ -131,17 +135,18 @@ public class SysConfigServiceImpl implements ISysConfigService
     @Override
     public int updateConfig(SysConfig config)
     {
-        SysConfig temp = configMapper.selectConfigById(config.getConfigId());
-        if (!StringUtils.equals(temp.getConfigKey(), config.getConfigKey()))
-        {
-            redisCache.deleteObject(getCacheKey(temp.getConfigKey()));
-        }
+        // SysConfig temp = configMapper.selectConfigById(config.getConfigId());
+        // if (!StringUtils.equals(temp.getConfigKey(), config.getConfigKey()))
+        // {
+        //     redisCache.deleteObject(getCacheKey(temp.getConfigKey()));
+        // }
 
         int row = configMapper.updateConfig(config);
-        if (row > 0)
-        {
-            redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
-        }
+        // 去Redis改造：原逻辑更新Redis缓存，暂时停用
+        // if (row > 0)
+        // {
+        //     redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
+        // }
         return row;
     }
 
@@ -161,7 +166,8 @@ public class SysConfigServiceImpl implements ISysConfigService
                 throw new ServiceException(String.format("内置参数【%1$s】不能删除 ", config.getConfigKey()));
             }
             configMapper.deleteConfigById(configId);
-            redisCache.deleteObject(getCacheKey(config.getConfigKey()));
+            // 去Redis改造：原逻辑删除Redis缓存，暂时停用
+            // redisCache.deleteObject(getCacheKey(config.getConfigKey()));
         }
     }
 
@@ -171,11 +177,12 @@ public class SysConfigServiceImpl implements ISysConfigService
     @Override
     public void loadingConfigCache()
     {
-        List<SysConfig> configsList = configMapper.selectConfigList(new SysConfig());
-        for (SysConfig config : configsList)
-        {
-            redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
-        }
+        // 去Redis改造：原逻辑全量加载参数配置到Redis缓存，暂时停用（保留便于恢复）
+        // List<SysConfig> configsList = configMapper.selectConfigList(new SysConfig());
+        // for (SysConfig config : configsList)
+        // {
+        //     redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
+        // }
     }
 
     /**
@@ -184,8 +191,9 @@ public class SysConfigServiceImpl implements ISysConfigService
     @Override
     public void clearConfigCache()
     {
-        Collection<String> keys = redisCache.keys(CacheConstants.SYS_CONFIG_KEY + "*");
-        redisCache.deleteObject(keys);
+        // 去Redis改造：原逻辑清空Redis缓存，暂时停用（保留便于恢复）
+        // Collection<String> keys = redisCache.keys(CacheConstants.SYS_CONFIG_KEY + "*");
+        // redisCache.deleteObject(keys);
     }
 
     /**
@@ -194,8 +202,9 @@ public class SysConfigServiceImpl implements ISysConfigService
     @Override
     public void resetConfigCache()
     {
-        clearConfigCache();
-        loadingConfigCache();
+        // 去Redis改造：无缓存可重置，暂时停用（保留便于恢复）
+        // clearConfigCache();
+        // loadingConfigCache();
     }
 
     /**
@@ -222,8 +231,9 @@ public class SysConfigServiceImpl implements ISysConfigService
      * @param configKey 参数键
      * @return 缓存键key
      */
-    private String getCacheKey(String configKey)
-    {
-        return CacheConstants.SYS_CONFIG_KEY + configKey;
-    }
+    // 去Redis改造：无Redis后不再需要缓存key拼接，原方法暂时停用（保留便于恢复）
+    // private String getCacheKey(String configKey)
+    // {
+    //     return CacheConstants.SYS_CONFIG_KEY + configKey;
+    // }
 }

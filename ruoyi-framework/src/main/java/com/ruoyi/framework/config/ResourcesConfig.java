@@ -13,7 +13,9 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import com.ruoyi.common.config.RuoYiConfig;
 import com.ruoyi.common.constant.Constants;
-import com.ruoyi.framework.interceptor.RepeatSubmitInterceptor;
+import com.ruoyi.framework.interceptor.WxAuthInterceptor;
+// 去Redis改造：防重复提交拦截器依赖Redis，暂时停用（保留便于恢复）
+// import com.ruoyi.framework.interceptor.RepeatSubmitInterceptor;
 
 /**
  * 通用配置
@@ -23,8 +25,13 @@ import com.ruoyi.framework.interceptor.RepeatSubmitInterceptor;
 @Configuration
 public class ResourcesConfig implements WebMvcConfigurer
 {
+    // 去Redis改造：防重复提交拦截器依赖Redis，暂时停用（保留便于恢复）
+    // @Autowired
+    // private RepeatSubmitInterceptor repeatSubmitInterceptor;
+
+    /** 小程序登录鉴权拦截器 */
     @Autowired
-    private RepeatSubmitInterceptor repeatSubmitInterceptor;
+    private WxAuthInterceptor wxAuthInterceptor;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry)
@@ -45,7 +52,10 @@ public class ResourcesConfig implements WebMvcConfigurer
     @Override
     public void addInterceptors(InterceptorRegistry registry)
     {
-        registry.addInterceptor(repeatSubmitInterceptor).addPathPatterns("/**");
+        // 去Redis改造：防重复提交拦截器依赖Redis，暂时停用（保留便于恢复）
+        // registry.addInterceptor(repeatSubmitInterceptor).addPathPatterns("/**");
+        // 小程序接口鉴权拦截器（wx-login为登录签发接口，需放行）
+        registry.addInterceptor(wxAuthInterceptor).addPathPatterns("/api/**").excludePathPatterns("/api/auth/wx-login");
     }
 
     /**

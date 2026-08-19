@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.ResultMapper">
+    
+    <resultMap type="Result" id="ResultResult">
+    	<id     property="id"              column="id"              />
+        <result property="eventId"         column="event_id"        />
+        <result property="personId"        column="person_id"       />
+        <result property="registrationId"  column="registration_id" />
+        <result property="bib"             column="bib"             />
+        <result property="gunTime"         column="gun_time"        />
+        <result property="netTime"         column="net_time"        />
+        <result property="avgPace"         column="avg_pace"        />
+        <result property="totalRank"       column="total_rank"      />
+        <result property="status"          column="status"          />
+        <result property="source"          column="source"          />
+        <result property="personName"      column="person_name"     />
+        <result property="eventName"       column="event_name"      />
+        <result property="createTime"      column="create_time"     />
+    </resultMap>
+    
+    <sql id="selectResultVo">
+        select r.id, r.event_id, r.person_id, r.registration_id, r.bib, r.gun_time, r.net_time, r.avg_pace, r.total_rank, r.status, r.source, r.create_time, 
+               p.name as person_name, e.name as event_name
+		from `result` r
+        left join person p on r.person_id = p.id
+        left join `event` e on r.event_id = e.id
+    </sql>
+    
+    <select id="selectResultById" parameterType="Long" resultMap="ResultResult">
+        <include refid="selectResultVo"/>
+        where r.id = #{id}
+    </select>
+    
+    <select id="selectResultList" parameterType="Result" resultMap="ResultResult">
+        <include refid="selectResultVo"/>
+        <where>  
+			<if test="eventId != null">
+				AND r.event_id = #{eventId}
+			</if>
+			<if test="personId != null">
+				AND r.person_id = #{personId}
+			</if>
+			<if test="bib != null and bib != ''">
+				AND r.bib = #{bib}
+			</if>
+			<if test="status != null">
+				AND r.status = #{status}
+			</if>
+			<if test="personName != null and personName != ''">
+				AND p.name like concat('%', #{personName}, '%')
+			</if>
+		</where>
+        order by r.id desc
+    </select>
+    
+    <select id="selectMyResults" parameterType="Long" resultMap="ResultResult">
+        <include refid="selectResultVo"/>
+        where r.person_id = #{personId}
+        order by r.create_time desc
+    </select>
+    
+    <select id="selectByEventAndPerson" resultMap="ResultResult">
+        <include refid="selectResultVo"/>
+        where r.event_id = #{eventId} and r.person_id = #{personId} limit 1
+    </select>
+    
+    <insert id="insertResult" parameterType="Result" useGeneratedKeys="true" keyProperty="id">
+        insert into `result` (
+			<if test="eventId != null">event_id,</if>
+			<if test="personId != null">person_id,</if>
+			<if test="registrationId != null">registration_id,</if>
+			<if test="bib != null and bib != ''">bib,</if>
+			<if test="gunTime != null and gunTime != ''">gun_time,</if>
+			<if test="netTime != null and netTime != ''">net_time,</if>
+			<if test="avgPace != null and avgPace != ''">avg_pace,</if>
+			<if test="totalRank != null">total_rank,</if>
+			<if test="status != null">status,</if>
+			<if test="source != null">source,</if>
+ 			create_time
+        )values(
+			<if test="eventId != null">#{eventId},</if>
+			<if test="personId != null">#{personId},</if>
+			<if test="registrationId != null">#{registrationId},</if>
+			<if test="bib != null and bib != ''">#{bib},</if>
+			<if test="gunTime != null and gunTime != ''">#{gunTime},</if>
+			<if test="netTime != null and netTime != ''">#{netTime},</if>
+			<if test="avgPace != null and avgPace != ''">#{avgPace},</if>
+			<if test="totalRank != null">#{totalRank},</if>
+			<if test="status != null">#{status},</if>
+			<if test="source != null">#{source},</if>
+ 			sysdate()
+		)
+    </insert>
+	 
+    <update id="updateResult" parameterType="Result">
+        update `result` 
+        <set>
+            <if test="bib != null">bib = #{bib},</if>
+            <if test="gunTime != null">gun_time = #{gunTime},</if>
+            <if test="netTime != null">net_time = #{netTime},</if>
+            <if test="avgPace != null">avg_pace = #{avgPace},</if>
+            <if test="totalRank != null">total_rank = #{totalRank},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="source != null">source = #{source},</if>
+        </set>
+        where id = #{id}
+    </update>
+	
+    <delete id="deleteResultByIds" parameterType="Long">
+        delete from `result` where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+        	#{id}
+        </foreach>
+    </delete>
+    
+</mapper>

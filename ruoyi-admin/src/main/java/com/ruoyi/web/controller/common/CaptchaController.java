@@ -15,7 +15,7 @@ import com.ruoyi.common.config.RuoYiConfig;
 import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.common.core.redis.RedisCache;
+// import com.ruoyi.common.core.redis.RedisCache;       // 去Redis改造：原Redis缓存工具类，暂时停用（保留便于恢复）
 import com.ruoyi.common.utils.sign.Base64;
 import com.ruoyi.common.utils.uuid.IdUtils;
 import com.ruoyi.system.service.ISysConfigService;
@@ -34,8 +34,9 @@ public class CaptchaController
     @Resource(name = "captchaProducerMath")
     private Producer captchaProducerMath;
 
-    @Autowired
-    private RedisCache redisCache;
+    // 去Redis改造：原Redis缓存工具类，暂时停用（保留便于恢复）
+    // @Autowired
+    // private RedisCache redisCache;
     
     @Autowired
     private ISysConfigService configService;
@@ -45,50 +46,59 @@ public class CaptchaController
     @GetMapping("/captchaImage")
     public AjaxResult getCode(HttpServletResponse response) throws IOException
     {
+        // ============================================================================
+        // 去Redis改造：验证码依赖Redis存储校验，暂时停用验证码功能
+        // （返回 captchaEnabled=false，前端将不显示验证码输入框；原逻辑保留在下方注释中）
+        // ============================================================================
         AjaxResult ajax = AjaxResult.success();
-        boolean captchaEnabled = configService.selectCaptchaEnabled();
-        ajax.put("captchaEnabled", captchaEnabled);
-        if (!captchaEnabled)
-        {
-            return ajax;
-        }
-
-        // 保存验证码信息
-        String uuid = IdUtils.simpleUUID();
-        String verifyKey = CacheConstants.CAPTCHA_CODE_KEY + uuid;
-
-        String capStr = null, code = null;
-        BufferedImage image = null;
-
-        // 生成验证码
-        String captchaType = RuoYiConfig.getCaptchaType();
-        if ("math".equals(captchaType))
-        {
-            String capText = captchaProducerMath.createText();
-            capStr = capText.substring(0, capText.lastIndexOf("@"));
-            code = capText.substring(capText.lastIndexOf("@") + 1);
-            image = captchaProducerMath.createImage(capStr);
-        }
-        else if ("char".equals(captchaType))
-        {
-            capStr = code = captchaProducer.createText();
-            image = captchaProducer.createImage(capStr);
-        }
-
-        redisCache.setCacheObject(verifyKey, code, Constants.CAPTCHA_EXPIRATION, TimeUnit.MINUTES);
-        // 转换流信息写出
-        FastByteArrayOutputStream os = new FastByteArrayOutputStream();
-        try
-        {
-            ImageIO.write(image, "jpg", os);
-        }
-        catch (IOException e)
-        {
-            return AjaxResult.error(e.getMessage());
-        }
-
-        ajax.put("uuid", uuid);
-        ajax.put("img", Base64.encode(os.toByteArray()));
+        ajax.put("captchaEnabled", false);
         return ajax;
+
+        // ==================== 原逻辑（依赖Redis存储验证码）====================
+        // AjaxResult ajax = AjaxResult.success();
+        // boolean captchaEnabled = configService.selectCaptchaEnabled();
+        // ajax.put("captchaEnabled", captchaEnabled);
+        // if (!captchaEnabled)
+        // {
+        //     return ajax;
+        // }
+        //
+        // // 保存验证码信息
+        // String uuid = IdUtils.simpleUUID();
+        // String verifyKey = CacheConstants.CAPTCHA_CODE_KEY + uuid;
+        //
+        // String capStr = null, code = null;
+        // BufferedImage image = null;
+        //
+        // // 生成验证码
+        // String captchaType = RuoYiConfig.getCaptchaType();
+        // if ("math".equals(captchaType))
+        // {
+        //     String capText = captchaProducerMath.createText();
+        //     capStr = capText.substring(0, capText.lastIndexOf("@"));
+        //     code = capText.substring(capText.lastIndexOf("@") + 1);
+        //     image = captchaProducerMath.createImage(capStr);
+        // }
+        // else if ("char".equals(captchaType))
+        // {
+        //     capStr = code = captchaProducer.createText();
+        //     image = captchaProducer.createImage(capStr);
+        // }
+        //
+        // redisCache.setCacheObject(verifyKey, code, Constants.CAPTCHA_EXPIRATION, TimeUnit.MINUTES);
+        // // 转换流信息写出
+        // FastByteArrayOutputStream os = new FastByteArrayOutputStream();
+        // try
+        // {
+        //     ImageIO.write(image, "jpg", os);
+        // }
+        // catch (IOException e)
+        // {
+        //     return AjaxResult.error(e.getMessage());
+        // }
+        //
+        // ajax.put("uuid", uuid);
+        // ajax.put("img", Base64.encode(os.toByteArray()));
+        // return ajax;
     }
 }
