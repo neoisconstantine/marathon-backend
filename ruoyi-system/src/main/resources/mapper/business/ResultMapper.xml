@@ -53,7 +53,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 				AND p.name like concat('%', #{personName}, '%')
 			</if>
 		</where>
-        order by r.id desc
+        order by case when r.total_rank is null then 1 else 0 end, r.total_rank asc, r.id asc
     </select>
     
     <select id="selectMyResults" parameterType="Long" resultMap="ResultResult">

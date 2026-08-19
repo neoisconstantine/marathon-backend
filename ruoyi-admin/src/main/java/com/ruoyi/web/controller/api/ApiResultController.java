@@ -23,6 +23,17 @@ public class ApiResultController
     private IResultService resultService;
 
     /**
+     * 某赛事的成绩列表（公开：成绩查询页展示已结束赛事的所有选手成绩，按排名升序）
+     */
+    @GetMapping("/event")
+    public ApiResult event(@RequestParam Long eventId)
+    {
+        Result query = new Result();
+        query.setEventId(eventId);
+        return ApiResult.success(resultService.selectResultList(query));
+    }
+
+    /**
      * 我的赛事成绩列表
      */
     @GetMapping("/my")

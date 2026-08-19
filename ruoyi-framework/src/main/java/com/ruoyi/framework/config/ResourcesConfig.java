@@ -61,7 +61,8 @@ public class ResourcesConfig implements WebMvcConfigurer
                         "/api/monitor/**",
                         "/api/event/**",
                         "/api/content/**",
-                        "/api/camera/**");
+                        "/api/camera/**",
+                        "/api/result/event");
     }
 
     /**
