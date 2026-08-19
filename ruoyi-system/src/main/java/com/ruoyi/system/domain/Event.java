@@ -1,5 +1,6 @@
 package com.ruoyi.system.domain;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -56,6 +57,9 @@ public class Event extends BaseEntity
 
     /** 赛事介绍 */
     private String intro;
+
+    /** 赛事里程（公里，如 42.195；非必填） */
+    private BigDecimal mileage;
 
     public Long getId()
     {
@@ -187,6 +191,16 @@ public class Event extends BaseEntity
         this.intro = intro;
     }
 
+    public BigDecimal getMileage()
+    {
+        return mileage;
+    }
+
+    public void setMileage(BigDecimal mileage)
+    {
+        this.mileage = mileage;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -203,6 +217,7 @@ public class Event extends BaseEntity
             .append("registrationCount", getRegistrationCount())
             .append("coverUrl", getCoverUrl())
             .append("intro", getIntro())
+            .append("mileage", getMileage())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())

@@ -80,6 +80,22 @@ public interface IRegistrationService
     public int unbindPersonEvent(Long personId, Long eventId);
 
     /**
+     * 新增报名（管理端直接录入）
+     *
+     * @param registration 报名信息
+     * @return 结果
+     */
+    public int insertRegistration(Registration registration);
+
+    /**
+     * 修改报名（管理端编辑：号码布/状态等）
+     *
+     * @param registration 报名信息
+     * @return 结果
+     */
+    public int updateRegistration(Registration registration);
+
+    /**
      * 批量删除报名记录
      *
      * @param ids 需要删除的报名ID

@@ -265,6 +265,82 @@ public class RegistrationServiceImpl implements IRegistrationService
     }
 
     /**
+     * 新增报名（管理端直接录入）
+     * 校验赛事存在、名额未满、重复报名；状态默认待审核；报名人数 +1。
+     *
+     * @param registration 报名信息
+     * @return 结果
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int insertRegistration(Registration registration)
+    {
+        if (StringUtils.isNull(registration.getPersonId()))
+        {
+            throw new ServiceException("请选择参赛人员");
+        }
+        if (StringUtils.isNull(registration.getEventId()))
+        {
+            throw new ServiceException("请选择赛事");
+        }
+        // 1. 校验赛事存在
+        Event event = eventMapper.selectEventById(registration.getEventId());
+        if (StringUtils.isNull(event))
+        {
+            throw new ServiceException("赛事不存在");
+        }
+        // 2. 校验名额是否已满
+        int registered = StringUtils.isNull(event.getRegistered()) ? 0 : event.getRegistered();
+        if (StringUtils.isNotNull(event.getTotalQuota()) && registered >= event.getTotalQuota())
+        {
+            throw new ServiceException("名额已满");
+        }
+        // 3. 重复报名校验：已退赛（2）允许重新报名
+        Registration exist = registrationMapper.selectByPersonAndEvent(registration.getPersonId(), registration.getEventId());
+        if (StringUtils.isNotNull(exist) && !Integer.valueOf(2).equals(exist.getStatus()))
+        {
+            throw new ServiceException("该参赛人员已报名该赛事");
+        }
+        // 4. 报名落库：并发极端情况下依赖 uk_person_event 唯一索引兜底
+        if (StringUtils.isNull(registration.getStatus()))
+        {
+            registration.setStatus(0); // 0待审核
+        }
+        registration.setCreateTime(DateUtils.getNowDate());
+        try
+        {
+            registrationMapper.insertRegistration(registration);
+        }
+        catch (DuplicateKeyException e)
+        {
+            ServiceException exception = new ServiceException("该参赛人员已报名该赛事");
+            exception.initCause(e);
+            throw exception;
+        }
+        // 5. 赛事已报名人数 +1（数据库原子自增，保证计数最终一致）
+        eventMapper.increaseRegistered(registration.getEventId());
+        return 1;
+    }
+
+    /**
+     * 修改报名（管理端编辑：号码布/状态等）
+     *
+     * @param registration 报名信息
+     * @return 结果
+     */
+    @Override
+    public int updateRegistration(Registration registration)
+    {
+        Registration exist = registrationMapper.selectRegistrationById(registration.getId());
+        if (StringUtils.isNull(exist))
+        {
+            throw new ServiceException("报名记录不存在");
+        }
+        registration.setUpdateTime(DateUtils.getNowDate());
+        return registrationMapper.updateRegistration(registration);
+    }
+
+    /**
      * 批量删除报名记录
      *
      * @param ids 需要删除的报名ID

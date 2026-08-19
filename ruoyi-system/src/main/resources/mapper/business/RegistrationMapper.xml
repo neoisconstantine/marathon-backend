@@ -49,6 +49,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			<if test="personName != null and personName != ''">
 				AND p.name like concat('%', #{personName}, '%')
 			</if>
+			<if test="personPhone != null and personPhone != ''">
+				AND p.phone like concat('%', #{personPhone}, '%')
+			</if>
 		</where>
         order by r.create_time desc
     </select>
