@@ -33,13 +33,13 @@ public class ApiResultController
     }
 
     /**
-     * 成绩详情
+     * 成绩详情（含分段明细）
      */
     @GetMapping("/detail")
     public ApiResult detail(@RequestParam Long id)
     {
         Long personId = WxSecurityUtils.getPersonId();
-        Result result = resultService.selectResultById(id);
+        Result result = resultService.selectResultDetail(id);
         if (result == null || !personId.equals(result.getPersonId()))
         {
             return ApiResult.error("成绩不存在");

@@ -7,6 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.Result;
 import com.ruoyi.system.service.IResultService;
 
@@ -44,13 +46,13 @@ public class ResultController extends BaseController
     }
 
     /**
-     * 根据成绩编号获取详细信息
+     * 根据成绩编号获取详细信息（含分段明细）
      */
     @PreAuthorize("@ss.hasPermi('business:result:query')")
     @GetMapping("/{id}")
     public AjaxResult getInfo(@PathVariable Long id)
     {
-        return success(resultService.selectResultById(id));
+        return success(resultService.selectResultDetail(id));
     }
 
     /**
@@ -73,6 +75,22 @@ public class ResultController extends BaseController
     public AjaxResult confirm(@PathVariable Long id, Integer status)
     {
         return toAjax(resultService.confirmResult(id, status));
+    }
+
+    /**
+     * 根据通过记录计算赛事成绩
+     */
+    @PreAuthorize("@ss.hasPermi('business:result:edit')")
+    @Log(title = "成绩管理", businessType = BusinessType.UPDATE)
+    @PostMapping("/calculate")
+    public AjaxResult calculate(Long eventId)
+    {
+        if (StringUtils.isNull(eventId))
+        {
+            return error("赛事ID不能为空");
+        }
+        int count = resultService.calculateEventResults(eventId);
+        return success("计算完成，共生成 " + count + " 条成绩");
     }
 
     /**

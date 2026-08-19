@@ -92,5 +92,21 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         	#{id}
         </foreach>
     </delete>
+
+    <select id="selectArrivalsByEventAndBib" resultType="com.ruoyi.system.domain.vo.PassArrivalVo">
+        select bib, camera_id as cameraId, min(pass_time) as arriveTime
+        from pass_record
+        where event_id = #{eventId} and bib = #{bib}
+        group by camera_id, bib
+        order by arriveTime asc
+    </select>
+
+    <select id="selectAllArrivalsByEvent" resultType="com.ruoyi.system.domain.vo.PassArrivalVo">
+        select bib, camera_id as cameraId, min(pass_time) as arriveTime
+        from pass_record
+        where event_id = #{eventId}
+        group by bib, camera_id
+        order by bib, arriveTime asc
+    </select>
     
 </mapper>

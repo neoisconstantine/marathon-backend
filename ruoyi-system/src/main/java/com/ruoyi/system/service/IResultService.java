@@ -66,4 +66,20 @@ public interface IResultService
      * @return 结果
      */
     public int deleteResultByIds(Long[] ids);
+
+    /**
+     * 根据摄像头通过记录计算赛事成绩（系统计算，source=0）
+     *
+     * @param eventId 赛事ID
+     * @return 计算完成的选手数量
+     */
+    public int calculateEventResults(Long eventId);
+
+    /**
+     * 查询成绩详情（含分段明细）
+     *
+     * @param id 成绩ID
+     * @return 成绩信息（含 segments 分段明细）
+     */
+    public Result selectResultDetail(Long id);
 }

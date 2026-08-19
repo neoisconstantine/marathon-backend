@@ -45,6 +45,15 @@ public interface RegistrationMapper
     public Registration selectByPersonAndEvent(@Param("personId") Long personId, @Param("eventId") Long eventId);
 
     /**
+     * 通过赛事ID和号码牌查询报名
+     *
+     * @param eventId 赛事ID
+     * @param bib 号码牌
+     * @return 报名信息
+     */
+    public Registration selectByEventAndBib(@Param("eventId") Long eventId, @Param("bib") String bib);
+
+    /**
      * 新增报名
      * 
      * @param registration 报名信息
