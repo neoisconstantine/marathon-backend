@@ -26,6 +26,9 @@ public class WxLoginService
     /** 微信jscode2session接口地址 */
     private static final String JSCODE2SESSION_URL = "https://api.weixin.qq.com/sns/jscode2session";
 
+    /** 开发模式固定 openid（未配置 wx.appid 时所有登录共用同一用户，保证报名/成绩数据连贯） */
+    private static final String DEV_MODE_OPENID = "mock_dev_user";
+
     /** 小程序appid（留空时使用开发模式） */
     @Value("${wx.appid:}")
     private String appid;
@@ -74,7 +77,9 @@ public class WxLoginService
         if (StringUtils.isBlank(appid))
         {
             log.warn("微信未配置appid，使用开发模式openid");
-            return "mock_" + code;
+            // 开发模式固定 openid：code 是 uni.login 一次性临时凭证，每次登录都不同，
+            // 若拼进 openid 会导致每次登录都变成"新用户"（自动注册、看不到历史报名/成绩）
+            return DEV_MODE_OPENID;
         }
         String param = "appid=" + appid + "&secret=" + secret + "&js_code=" + code + "&grant_type=authorization_code";
         String result = HttpUtils.sendGet(JSCODE2SESSION_URL, param);
