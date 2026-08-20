@@ -63,6 +63,15 @@ public interface RegistrationMapper
     public Registration selectByEventAndPhone(@Param("eventId") Long eventId, @Param("phone") String phone);
 
     /**
+     * 通过赛事ID和身份证号查询报名（join person 取身份证号）
+     *
+     * @param eventId 赛事ID
+     * @param idCard 身份证号
+     * @return 报名信息
+     */
+    public Registration selectByEventAndIdCard(@Param("eventId") Long eventId, @Param("idCard") String idCard);
+
+    /**
      * 新增报名
      * 
      * @param registration 报名信息

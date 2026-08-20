@@ -40,6 +40,7 @@ create table `event` (
   registered        int(4)          default 0                  comment '已报名人数',
   signup_open       tinyint(1)      default 1                  comment '报名开关（0关闭 1开启）',
   status            tinyint(1)      default 0                  comment '赛事状态（0未发布 1报名中 2进行中 3已结束）',
+  fee               decimal(10,2)   default 0         comment '报名费用（元）',
   cover_url         varchar(500)    default null               comment '封面图地址',
   intro             text            default null               comment '赛事介绍',
   create_time       datetime        default null               comment '创建时间',

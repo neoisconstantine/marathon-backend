@@ -61,6 +61,9 @@ public class Event extends BaseEntity
     /** 赛事里程（公里，如 42.195；非必填） */
     private BigDecimal mileage;
 
+    /** 报名费用（元，如 150.00；0 表示免费） */
+    private BigDecimal fee;
+
     public Long getId()
     {
         return id;
@@ -201,6 +204,16 @@ public class Event extends BaseEntity
         this.mileage = mileage;
     }
 
+    public BigDecimal getFee()
+    {
+        return fee;
+    }
+
+    public void setFee(BigDecimal fee)
+    {
+        this.fee = fee;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -218,6 +231,7 @@ public class Event extends BaseEntity
             .append("coverUrl", getCoverUrl())
             .append("intro", getIntro())
             .append("mileage", getMileage())
+            .append("fee", getFee())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())

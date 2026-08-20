@@ -127,6 +127,15 @@ public class RegistrationServiceImpl implements IRegistrationService
                 throw new ServiceException("该手机号已报名该赛事");
             }
         }
+        // 6.55 身份证防重校验：同一身份证号同一赛事仅可报名一次（已退赛允许重新报名）
+        if (StringUtils.isNotBlank(idCard))
+        {
+            Registration idCardDup = registrationMapper.selectByEventAndIdCard(eventId, idCard);
+            if (StringUtils.isNotNull(idCardDup) && !Integer.valueOf(2).equals(idCardDup.getStatus()))
+            {
+                throw new ServiceException("该身份证号已报名该赛事");
+            }
+        }
         // 6.6 报名信息回填：姓名/手机号/身份证补充到参赛用户资料（动态SQL只更新非空字段）
         if (StringUtils.isNotBlank(name) || StringUtils.isNotBlank(phone) || StringUtils.isNotBlank(idCard))
         {
@@ -247,6 +256,16 @@ public class RegistrationServiceImpl implements IRegistrationService
         {
             throw new ServiceException("该参赛用户已绑定该赛事");
         }
+        // 3.5 身份证防重校验：同一身份证号同一赛事仅可一条记录（不同账号同身份证也拦截，已退赛允许重新绑定）
+        Person person = personMapper.selectPersonById(personId);
+        if (StringUtils.isNotNull(person) && StringUtils.isNotBlank(person.getIdCard()))
+        {
+            Registration idCardDup = registrationMapper.selectByEventAndIdCard(eventId, person.getIdCard());
+            if (StringUtils.isNotNull(idCardDup) && !Integer.valueOf(2).equals(idCardDup.getStatus()))
+            {
+                throw new ServiceException("该身份证号已绑定该赛事");
+            }
+        }
         // 4. 报名落库：并发极端情况下依赖 uk_person_event 唯一索引兜底
         Registration registration = new Registration();
         registration.setPersonId(personId);
@@ -332,6 +351,16 @@ public class RegistrationServiceImpl implements IRegistrationService
         if (StringUtils.isNotNull(exist) && !Integer.valueOf(2).equals(exist.getStatus()))
         {
             throw new ServiceException("该参赛人员已报名该赛事");
+        }
+        // 3.5 身份证防重校验：同一身份证号同一赛事仅可一条记录（不同账号同身份证也拦截，已退赛允许重新报名）
+        Person person = personMapper.selectPersonById(registration.getPersonId());
+        if (StringUtils.isNotNull(person) && StringUtils.isNotBlank(person.getIdCard()))
+        {
+            Registration idCardDup = registrationMapper.selectByEventAndIdCard(registration.getEventId(), person.getIdCard());
+            if (StringUtils.isNotNull(idCardDup) && !Integer.valueOf(2).equals(idCardDup.getStatus()))
+            {
+                throw new ServiceException("该身份证号已报名该赛事");
+            }
         }
         // 4. 报名落库：并发极端情况下依赖 uk_person_event 唯一索引兜底
         if (StringUtils.isNull(registration.getStatus()))

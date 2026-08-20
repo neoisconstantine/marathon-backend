@@ -18,13 +18,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="coverUrl"     column="cover_url"    />
         <result property="intro"        column="intro"        />
         <result property="mileage"      column="mileage"      />
+        <result property="fee"          column="fee"          />
         <result property="registrationCount" column="registration_count" />
         <result property="createTime"   column="create_time"  />
         <result property="updateTime"   column="update_time"  />
     </resultMap>
     
     <sql id="selectEventVo">
-        select e.id, e.name, e.location, e.start_time, e.signup_start, e.signup_end, e.total_quota, e.registered, e.signup_open, e.status, e.cover_url, e.intro, e.mileage, e.create_time, e.update_time,
+        select e.id, e.name, e.location, e.start_time, e.signup_start, e.signup_end, e.total_quota, e.registered, e.signup_open, e.status, e.fee, e.cover_url, e.intro, e.mileage, e.create_time, e.update_time,
                (select count(*) from registration r where r.event_id = e.id and r.status != 2) as registration_count
 		from `event` e
     </sql>
@@ -74,6 +75,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			<if test="coverUrl != null and coverUrl != ''">cover_url,</if>
 			<if test="intro != null">intro,</if>
 			<if test="mileage != null">mileage,</if>
+			<if test="fee != null">fee,</if>
  			create_time
         )values(
 			<if test="name != null and name != ''">#{name},</if>
@@ -88,6 +90,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			<if test="coverUrl != null and coverUrl != ''">#{coverUrl},</if>
 			<if test="intro != null">#{intro},</if>
 			<if test="mileage != null">#{mileage},</if>
+			<if test="fee != null">#{fee},</if>
  			sysdate()
 		)
     </insert>
@@ -107,6 +110,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="coverUrl != null">cover_url = #{coverUrl},</if>
             <if test="intro != null">intro = #{intro},</if>
             <if test="mileage != null">mileage = #{mileage},</if>
+            <if test="fee != null">fee = #{fee},</if>
  			update_time = sysdate()
         </set>
         where id = #{id}

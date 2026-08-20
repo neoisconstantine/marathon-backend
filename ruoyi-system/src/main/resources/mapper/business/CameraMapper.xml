@@ -7,6 +7,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <resultMap type="Camera" id="CameraResult">
     	<id     property="id"        column="id"          />
         <result property="eventId"   column="event_id"    />
+        <result property="eventName" column="event_name"  />
         <result property="cameraId"  column="camera_id"   />
         <result property="name"      column="name"        />
         <result property="location"  column="location"    />
@@ -18,7 +19,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
     
     <sql id="selectCameraVo">
-        select id, event_id, camera_id, name, location, lng, lat, status, create_time, update_time from camera
+        select c.id, c.event_id, e.name as event_name, c.camera_id, c.name, c.location, c.lng, c.lat, c.status, c.create_time, c.update_time
+        from camera c
+        left join `event` e on c.event_id = e.id
     </sql>
     
     <select id="selectCameraById" parameterType="Long" resultMap="CameraResult">
@@ -35,19 +38,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectCameraVo"/>
         <where>  
 			<if test="eventId != null">
-				AND event_id = #{eventId}
+				AND c.event_id = #{eventId}
 			</if>
 			<if test="cameraId != null and cameraId != ''">
-				AND camera_id = #{cameraId}
+				AND c.camera_id = #{cameraId}
 			</if>
 			<if test="name != null and name != ''">
-				AND name like concat('%', #{name}, '%')
+				AND c.name like concat('%', #{name}, '%')
 			</if>
 			<if test="location != null and location != ''">
-				AND location like concat('%', #{location}, '%')
+				AND c.location like concat('%', #{location}, '%')
 			</if>
 			<if test="status != null">
-				AND status = #{status}
+				AND c.status = #{status}
 			</if>
 		</where>
         order by id desc

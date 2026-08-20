@@ -1,5 +1,6 @@
 package com.ruoyi.system.service.impl;
 
+import java.util.Date;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,7 @@ public class EventServiceImpl implements IEventService
     @Override
     public int insertEvent(Event event)
     {
+        validateEventTime(event);
         event.setCreateTime(DateUtils.getNowDate());
         if (StringUtils.isNull(event.getStatus()))
         {
@@ -79,8 +81,30 @@ public class EventServiceImpl implements IEventService
     @Override
     public int updateEvent(Event event)
     {
+        validateEventTime(event);
         event.setUpdateTime(DateUtils.getNowDate());
         return eventMapper.updateEvent(event);
+    }
+
+    /**
+     * 赛事时间关系校验（服务端兜底，防止绕过前端校验提交非法时间）：
+     * 1. 报名开始时间必须早于报名截止时间（signupStart &lt; signupEnd）
+     * 2. 比赛开始时间必须晚于报名截止时间（startTime &gt; signupEnd）
+     * 时间字段为空时跳过对应校验（编辑时可能只提交部分字段）
+     */
+    private void validateEventTime(Event event)
+    {
+        Date start = event.getStartTime();
+        Date signupStart = event.getSignupStart();
+        Date signupEnd = event.getSignupEnd();
+        if (signupStart != null && signupEnd != null && !signupStart.before(signupEnd))
+        {
+            throw new ServiceException("报名开始时间必须早于报名截止时间");
+        }
+        if (signupEnd != null && start != null && !start.after(signupEnd))
+        {
+            throw new ServiceException("比赛开始时间必须晚于报名截止时间");
+        }
     }
 
     /**

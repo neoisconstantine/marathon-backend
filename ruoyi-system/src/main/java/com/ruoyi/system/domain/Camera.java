@@ -38,6 +38,9 @@ public class Camera extends BaseEntity
     /** 状态（0停用 1启用） */
     private Integer status;
 
+    /** 关联赛事名称（联表查询展示用，非表字段） */
+    private String eventName;
+
     public Long getId()
     {
         return id;
@@ -118,6 +121,16 @@ public class Camera extends BaseEntity
         this.status = status;
     }
 
+    public String getEventName()
+    {
+        return eventName;
+    }
+
+    public void setEventName(String eventName)
+    {
+        this.eventName = eventName;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -129,6 +142,7 @@ public class Camera extends BaseEntity
             .append("lng", getLng())
             .append("lat", getLat())
             .append("status", getStatus())
+            .append("eventName", getEventName())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())
