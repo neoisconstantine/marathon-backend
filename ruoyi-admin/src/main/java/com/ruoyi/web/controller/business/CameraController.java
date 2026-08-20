@@ -1,5 +1,7 @@
 package com.ruoyi.web.controller.business;
 
+import java.util.List;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -11,11 +13,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.system.domain.Camera;
 import com.ruoyi.system.service.ICameraService;
 
@@ -83,5 +87,49 @@ public class CameraController extends BaseController
     public AjaxResult remove(@PathVariable Long[] ids)
     {
         return toAjax(cameraService.deleteCameraByIds(ids));
+    }
+
+    /**
+     * 导出摄像头列表
+     */
+    @Log(title = "摄像头管理", businessType = BusinessType.EXPORT)
+    @PreAuthorize("@ss.hasPermi('business:camera:export')")
+    @PostMapping("/export")
+    public void export(HttpServletResponse response, Camera camera)
+    {
+        List<Camera> list = cameraService.selectCameraList(camera);
+        ExcelUtil<Camera> util = new ExcelUtil<Camera>(Camera.class);
+        util.exportExcel(response, list, "摄像头数据");
+    }
+
+    /**
+     * 导入摄像头数据
+     */
+    @Log(title = "摄像头管理", businessType = BusinessType.IMPORT)
+    @PreAuthorize("@ss.hasPermi('business:camera:import')")
+    @PostMapping("/import")
+    public AjaxResult importData(MultipartFile file, boolean updateSupport)
+    {
+        try
+        {
+            ExcelUtil<Camera> util = new ExcelUtil<Camera>(Camera.class);
+            List<Camera> cameraList = util.importExcel(file.getInputStream());
+            String message = cameraService.importCamera(cameraList, updateSupport);
+            return success(message);
+        }
+        catch (Exception e)
+        {
+            return error(e.getMessage());
+        }
+    }
+
+    /**
+     * 下载摄像头导入模板
+     */
+    @PostMapping("/importTemplate")
+    public void importTemplate(HttpServletResponse response)
+    {
+        ExcelUtil<Camera> util = new ExcelUtil<Camera>(Camera.class);
+        util.importTemplateExcel(response, "摄像头数据");
     }
 }

@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.ruoyi.common.annotation.RateLimiter;
+import com.ruoyi.common.annotation.RepeatSubmit;
 import com.ruoyi.common.core.domain.ApiResult;
+import com.ruoyi.common.enums.LimitType;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.WxSecurityUtils;
 import com.ruoyi.system.service.IRegistrationService;
@@ -29,6 +32,8 @@ public class ApiRegistrationController
      * 入参：{ eventId, name, phone, idCard }，name/phone/idCard 为报名表单填写的参赛信息，
      * 非空时在 Service 内回填到当前登录的参赛用户资料（PersonMapper 动态 SQL 只更新非空字段）
      */
+    @RateLimiter(time = 10, count = 5, limitType = LimitType.IP)
+    @RepeatSubmit(interval = 5000, message = "请勿重复提交报名，请稍候再试")
     @PostMapping("/create")
     public ApiResult create(@RequestBody Map<String, String> body)
     {

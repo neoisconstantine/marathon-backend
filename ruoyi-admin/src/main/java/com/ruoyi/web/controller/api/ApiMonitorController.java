@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.ruoyi.common.annotation.RateLimiter;
 import com.ruoyi.common.core.domain.ApiResult;
+import com.ruoyi.common.enums.LimitType;
 import com.ruoyi.system.domain.Camera;
 import com.ruoyi.system.domain.vo.HeatRecordVo;
 import com.ruoyi.system.mapper.CameraMapper;
@@ -42,6 +44,7 @@ public class ApiMonitorController
      *
      * @param eventId 赛事ID（必填）
      */
+    @RateLimiter(time = 1, count = 10, limitType = LimitType.IP)
     @GetMapping("/heatmap")
     public ApiResult heatmap(@RequestParam Long eventId)
     {

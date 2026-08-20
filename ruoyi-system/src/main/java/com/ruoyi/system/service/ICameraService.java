@@ -49,4 +49,13 @@ public interface ICameraService
      * @return 结果
      */
     public int deleteCameraByIds(Long[] ids);
+
+    /**
+     * 批量导入摄像头（按赛事名称解析 eventId；同赛事下编码已存在时按 updateSupport 决定更新或跳过）
+     *
+     * @param cameraList 摄像头列表
+     * @param updateSupport 是否更新已存在的摄像头
+     * @return 导入结果信息
+     */
+    public String importCamera(List<Camera> cameraList, boolean updateSupport);
 }

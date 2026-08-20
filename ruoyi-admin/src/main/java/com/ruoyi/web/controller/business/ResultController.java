@@ -1,6 +1,7 @@
 package com.ruoyi.web.controller.business;
 
 import java.util.List;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -18,6 +19,7 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.system.domain.Result;
 import com.ruoyi.system.service.IResultService;
 
@@ -43,6 +45,19 @@ public class ResultController extends BaseController
         startPage();
         List<Result> list = resultService.selectResultList(result);
         return getDataTable(list);
+    }
+
+    /**
+     * 导出成绩列表（Excel，支持按当前查询条件过滤，不分页）
+     */
+    @PreAuthorize("@ss.hasPermi('business:result:export')")
+    @Log(title = "成绩管理", businessType = BusinessType.EXPORT)
+    @PostMapping("/export")
+    public void export(HttpServletResponse response, Result result)
+    {
+        List<Result> list = resultService.selectResultList(result);
+        ExcelUtil<Result> util = new ExcelUtil<>(Result.class);
+        util.exportExcel(response, list, "成绩数据");
     }
 
     /**

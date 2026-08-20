@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.ruoyi.common.annotation.RateLimiter;
 import com.ruoyi.common.core.domain.ApiResult;
+import com.ruoyi.common.enums.LimitType;
 import com.ruoyi.system.service.IContentService;
 
 /**
@@ -22,6 +24,7 @@ public class ApiContentController
     /**
      * 轮播图列表
      */
+    @RateLimiter(time = 1, count = 20, limitType = LimitType.IP)
     @GetMapping("/banner")
     public ApiResult banner()
     {
@@ -31,6 +34,7 @@ public class ApiContentController
     /**
      * 公告列表
      */
+    @RateLimiter(time = 1, count = 20, limitType = LimitType.IP)
     @GetMapping("/notice")
     public ApiResult notice()
     {

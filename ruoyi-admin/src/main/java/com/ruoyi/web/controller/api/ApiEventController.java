@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.ruoyi.common.annotation.RateLimiter;
 import com.ruoyi.common.core.domain.ApiResult;
+import com.ruoyi.common.enums.LimitType;
 import com.ruoyi.system.domain.Event;
 import com.ruoyi.system.service.IEventService;
 
@@ -28,6 +30,7 @@ public class ApiEventController
     /**
      * 赛事列表（分页）
      */
+    @RateLimiter(time = 1, count = 20, limitType = LimitType.IP)
     @GetMapping("/list")
     public ApiResult list(Event event, @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize)
@@ -50,6 +53,7 @@ public class ApiEventController
     /**
      * 赛事详情
      */
+    @RateLimiter(time = 1, count = 20, limitType = LimitType.IP)
     @GetMapping("/detail")
     public ApiResult detail(@RequestParam Long id)
     {

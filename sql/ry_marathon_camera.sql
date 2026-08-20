@@ -35,3 +35,5 @@ insert into sys_menu values('2051', '摄像头新增', '2050', '1', '', '', '', 
 insert into sys_menu values('2052', '摄像头修改', '2050', '2', '', '', '', '', 1, 0, 'F', '0', '0', 'business:camera:edit', '#', 'admin', sysdate(), '', null, '');
 insert into sys_menu values('2053', '摄像头删除', '2050', '3', '', '', '', '', 1, 0, 'F', '0', '0', 'business:camera:remove', '#', 'admin', sysdate(), '', null, '');
 insert into sys_menu values('2054', '摄像头查询', '2050', '4', '', '', '', '', 1, 0, 'F', '0', '0', 'business:camera:query', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2055', '摄像头导出', '2050', '5', '', '', '', '', 1, 0, 'F', '0', '0', 'business:camera:export', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2056', '摄像头导入', '2050', '6', '', '', '', '', 1, 0, 'F', '0', '0', 'business:camera:import', '#', 'admin', sysdate(), '', null, '');

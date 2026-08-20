@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.ruoyi.common.annotation.RateLimiter;
 import com.ruoyi.common.core.domain.ApiResult;
+import com.ruoyi.common.enums.LimitType;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.PassRecord;
 import com.ruoyi.system.mapper.PassRecordMapper;
@@ -30,6 +32,7 @@ public class ApiIntegrationController
      * 单条点位通过记录
      * TODO: 后续增加 API Key 鉴权（管理端生成、可轮换）
      */
+    @RateLimiter(time = 1, count = 50, limitType = LimitType.IP)
     @PostMapping("/pass")
     public ApiResult pass(@RequestBody PassRecord passRecord)
     {
@@ -63,6 +66,7 @@ public class ApiIntegrationController
      * 批量推送点位通过记录（≤1000 条/次）
      * TODO: 后续增加 API Key 鉴权
      */
+    @RateLimiter(time = 1, count = 50, limitType = LimitType.IP)
     @PostMapping("/pass/batch")
     public ApiResult passBatch(@RequestBody List<PassRecord> list)
     {

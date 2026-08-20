@@ -140,20 +140,36 @@ public class TokenService
     }
 
     /**
-     * 验证令牌有效期，相差不足20分钟，自动刷新缓存
-     * 
+     * 验证令牌有效期，相差不足20分钟时自动续期（无状态JWT滑动续期）
+     *
      * @param loginUser 登录信息
-     * @return 令牌
+     * @return 续期后的新令牌（无需续期时返回null，由过滤器写入响应头 New-Token，前端静默替换）
      */
-    public void verifyToken(LoginUser loginUser)
+    public String verifyToken(LoginUser loginUser)
     {
-        // 去Redis改造：无状态JWT由token自身过期时间控制，无需滑动续期
-        // long expireTime = loginUser.getExpireTime();
-        // long currentTime = System.currentTimeMillis();
-        // if (expireTime - currentTime <= MILLIS_MINUTE_TWENTY)
-        // {
-        //     refreshToken(loginUser);
-        // }
+        // 滑动续期：JWT过期时间在签发时锁定，无法原地延长，
+        // 剩余有效期不足20分钟时重新签发新JWT，经响应头 New-Token 下发给前端替换
+        long currentTime = System.currentTimeMillis();
+        if (loginUser.getExpireTime() - currentTime <= MILLIS_MINUTE_TWENTY)
+        {
+            return renewToken(loginUser);
+        }
+        return null;
+    }
+
+    /**
+     * 重新签发令牌（滑动续期用：更新loginTime/expireTime后重建JWT）
+     *
+     * @param loginUser 登录信息
+     * @return 新令牌
+     */
+    private String renewToken(LoginUser loginUser)
+    {
+        refreshToken(loginUser);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(Constants.LOGIN_USER_KEY, JSON.toJSONString(loginUser));
+        claims.put(Constants.JWT_USERNAME, loginUser.getUsername());
+        return createToken(claims);
     }
 
     /**

@@ -35,6 +35,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where e.id = #{id}
     </select>
     
+    <select id="selectEventByName" parameterType="String" resultMap="EventResult">
+        <include refid="selectEventVo"/>
+        where e.name = #{name} limit 1
+    </select>
+    
     <select id="selectEventList" parameterType="Event" resultMap="EventResult">
         <include refid="selectEventVo"/>
         <where>  

@@ -8,7 +8,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.ruoyi.common.annotation.RateLimiter;
+import com.ruoyi.common.annotation.RepeatSubmit;
 import com.ruoyi.common.core.domain.ApiResult;
+import com.ruoyi.common.enums.LimitType;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.WxSecurityUtils;
 import com.ruoyi.framework.web.service.WxLoginService;
@@ -34,6 +37,7 @@ public class ApiAuthController
      * 微信登录（code换取小程序令牌）
      * 返回 { token, isNewUser }：isNewUser=true 表示首次登录自动注册的新用户
      */
+    @RateLimiter(time = 10, count = 10, limitType = LimitType.IP)
     @PostMapping("/wx-login")
     public ApiResult wxLogin(@RequestBody Map<String, String> body)
     {
@@ -49,6 +53,7 @@ public class ApiAuthController
      * 手机号快捷验证组件 code 换取用户手机号
      * （需已认证小程序并配置 wx.appid；未配置时返回明确错误，前端降级为手动输入）
      */
+    @RateLimiter(time = 60, count = 10, limitType = LimitType.IP)
     @PostMapping("/phone")
     public ApiResult phone(@RequestBody Map<String, String> body)
     {
@@ -62,13 +67,23 @@ public class ApiAuthController
     }
 
     /**
-     * 绑定手机号：将授权获取到的手机号回填到当前登录用户（首次登录引导授权后调用）
+     * 完善用户信息：绑定手机号/设置昵称姓名（首次登录引导弹窗提交）
+     * 入参 { phone, name } 均可选，至少传一个；非空字段才更新（动态SQL只更新非空列）
+     * name：昵称输入框(type=nickname)带入的微信昵称或手动输入的姓名；
+     *       后续报名时若用户填写了真实姓名，会经 createRegistration 回填覆盖
      */
+    @RateLimiter(time = 10, count = 5, limitType = LimitType.IP)
+    @RepeatSubmit(interval = 3000, message = "请勿重复提交绑定请求")
     @PostMapping("/bind-phone")
     public ApiResult bindPhone(@RequestBody Map<String, String> body)
     {
         String phone = body.get("phone");
-        if (StringUtils.isBlank(phone) || !phone.matches("1\\d{10}"))
+        String name = body.get("name");
+        if (StringUtils.isBlank(phone) && StringUtils.isBlank(name))
+        {
+            return ApiResult.error("请至少填写手机号或昵称");
+        }
+        if (StringUtils.isNotBlank(phone) && !phone.matches("1\\d{10}"))
         {
             return ApiResult.error("手机号格式不正确");
         }
@@ -79,7 +94,9 @@ public class ApiAuthController
         }
         Person person = new Person();
         person.setId(personId);
-        person.setPhone(phone);
+        // 动态SQL只更新非null字段：blank值统一置null避免把已有数据覆盖成空串
+        person.setPhone(StringUtils.isBlank(phone) ? null : phone);
+        person.setName(StringUtils.isBlank(name) ? null : name.trim());
         personService.updatePerson(person);
         return ApiResult.success("ok", null);
     }

@@ -80,6 +80,8 @@ public class ResourcesConfig implements WebMvcConfigurer
         config.addAllowedMethod("*");
         // 有效期 1800秒
         config.setMaxAge(1800L);
+        // 暴露token滑动续期响应头（跨域时前端JS才能读取 New-Token）
+        config.addExposedHeader("New-Token");
         // 添加映射路径，拦截一切请求
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

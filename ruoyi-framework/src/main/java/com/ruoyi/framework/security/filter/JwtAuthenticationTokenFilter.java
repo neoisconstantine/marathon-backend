@@ -34,7 +34,13 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter
         LoginUser loginUser = tokenService.getLoginUser(request);
         if (StringUtils.isNotNull(loginUser) && StringUtils.isNull(SecurityUtils.getAuthentication()))
         {
-            tokenService.verifyToken(loginUser);
+            // 滑动续期：剩余有效期不足20分钟时后端重新签发token，经响应头 New-Token 下发，
+            // 前端响应拦截器静默替换本地token（用户无感知，持续操作不再每30分钟掉线）
+            String renewedToken = tokenService.verifyToken(loginUser);
+            if (StringUtils.isNotEmpty(renewedToken))
+            {
+                response.setHeader("New-Token", renewedToken);
+            }
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);

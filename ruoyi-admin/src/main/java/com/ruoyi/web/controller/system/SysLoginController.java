@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import com.ruoyi.common.annotation.RateLimiter;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysMenu;
@@ -15,6 +16,7 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginBody;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.text.Convert;
+import com.ruoyi.common.enums.LimitType;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
@@ -48,11 +50,12 @@ public class SysLoginController
     private ISysConfigService configService;
 
     /**
-     * 登录方法
-     * 
+     * 登录方法（IP限流防密码爆破：60秒内最多10次尝试）
+     *
      * @param loginBody 登录信息
      * @return 结果
      */
+    @RateLimiter(time = 60, count = 10, limitType = LimitType.IP)
     @PostMapping("/login")
     public AjaxResult login(@RequestBody LoginBody loginBody)
     {

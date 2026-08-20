@@ -6,7 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.ruoyi.common.annotation.RateLimiter;
 import com.ruoyi.common.core.domain.ApiResult;
+import com.ruoyi.common.enums.LimitType;
 import com.ruoyi.system.domain.Camera;
 import com.ruoyi.system.service.ICameraService;
 
@@ -28,6 +30,7 @@ public class ApiCameraController
      *
      * @param eventId 赛事ID（必填，点位按赛事隔离）
      */
+    @RateLimiter(time = 1, count = 20, limitType = LimitType.IP)
     @GetMapping("/list")
     public ApiResult list(@RequestParam Long eventId)
     {

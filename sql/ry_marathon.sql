@@ -179,6 +179,7 @@ insert into sys_menu values('2025', '成绩修改', '2004', '2', '', '', '', '',
 insert into sys_menu values('2026', '成绩删除', '2004', '3', '', '', '', '', 1, 0, 'F', '0', '0', 'business:result:remove',  '#', 'admin', sysdate(), '', null, '');
 insert into sys_menu values('2027', '成绩查询', '2004', '4', '', '', '', '', 1, 0, 'F', '0', '0', 'business:result:query',   '#', 'admin', sysdate(), '', null, '');
 insert into sys_menu values('2028', '成绩确认', '2004', '5', '', '', '', '', 1, 0, 'F', '0', '0', 'business:result:confirm', '#', 'admin', sysdate(), '', null, '');
+insert into sys_menu values('2036', '成绩导出', '2004', '6', '', '', '', '', 1, 0, 'F', '0', '0', 'business:result:export', '#', 'admin', sysdate(), '', null, '');
 -- 资讯管理按钮
 insert into sys_menu values('2029', '资讯新增', '2005', '1', '', '', '', '', 1, 0, 'F', '0', '0', 'business:content:add',    'btn-add', 'admin', sysdate(), '', null, '');
 insert into sys_menu values('2030', '资讯修改', '2005', '2', '', '', '', '', 1, 0, 'F', '0', '0', 'business:content:edit',   '#', 'admin', sysdate(), '', null, '');

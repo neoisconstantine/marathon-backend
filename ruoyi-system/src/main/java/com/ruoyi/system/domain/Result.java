@@ -3,6 +3,7 @@ package com.ruoyi.system.domain;
 import java.util.List;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
 import com.ruoyi.system.domain.vo.SegmentVo;
 
@@ -28,30 +29,39 @@ public class Result extends BaseEntity
     private Long registrationId;
 
     /** 参赛号码布 */
+    @Excel(name = "参赛号", width = 12)
     private String bib;
 
     /** 枪声成绩 */
+    @Excel(name = "枪声成绩", width = 15)
     private String gunTime;
 
     /** 净成绩 */
+    @Excel(name = "净成绩", width = 15)
     private String netTime;
 
     /** 平均配速 */
+    @Excel(name = "平均配速", width = 15)
     private String avgPace;
 
     /** 总排名 */
+    @Excel(name = "总排名", width = 10)
     private Integer totalRank;
 
     /** 成绩状态（0未完赛 1已完赛 2成绩无效） */
+    @Excel(name = "状态", readConverterExp = "0=未完赛,1=已完赛,2=成绩无效", width = 12)
     private Integer status;
 
     /** 成绩来源（0系统计算 1外部推送） */
+    @Excel(name = "成绩来源", readConverterExp = "0=系统计算,1=外部推送", width = 12)
     private Integer source;
 
     /** 参赛用户名称 */
+    @Excel(name = "姓名", width = 15)
     private String personName;
 
     /** 赛事名称 */
+    @Excel(name = "赛事名称", width = 30)
     private String eventName;
 
     /** 成绩分段明细（详情查询返回） */

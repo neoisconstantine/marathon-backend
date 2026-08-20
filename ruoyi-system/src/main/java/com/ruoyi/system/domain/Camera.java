@@ -3,6 +3,7 @@ package com.ruoyi.system.domain;
 import java.math.BigDecimal;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
@@ -21,24 +22,31 @@ public class Camera extends BaseEntity
     private Long eventId;
 
     /** 摄像头ID/点位编码（如 CP-05KM） */
+    @Excel(name = "摄像头编码", width = 20)
     private String cameraId;
 
     /** 摄像头名称（如 5公里计时点） */
+    @Excel(name = "摄像头名称", width = 20)
     private String name;
 
     /** 安装位置描述 */
+    @Excel(name = "安装位置", width = 25)
     private String location;
 
     /** 经度（大屏地图/热力图定位） */
+    @Excel(name = "经度", width = 15)
     private BigDecimal lng;
 
     /** 纬度（大屏地图/热力图定位） */
+    @Excel(name = "纬度", width = 15)
     private BigDecimal lat;
 
     /** 状态（0停用 1启用） */
+    @Excel(name = "状态", readConverterExp = "1=启用,0=停用", width = 10)
     private Integer status;
 
-    /** 关联赛事名称（联表查询展示用，非表字段） */
+    /** 关联赛事名称（联表查询展示用，非表字段；导入时按名称解析 eventId） */
+    @Excel(name = "赛事名称", width = 30)
     private String eventName;
 
     public Long getId()

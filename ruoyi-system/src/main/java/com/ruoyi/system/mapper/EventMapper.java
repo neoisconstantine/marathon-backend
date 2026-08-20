@@ -19,6 +19,14 @@ public interface EventMapper
     public Event selectEventById(Long id);
 
     /**
+     * 通过赛事名称查询赛事（摄像头导入时按名称解析 eventId）
+     * 
+     * @param name 赛事名称
+     * @return 赛事信息
+     */
+    public Event selectEventByName(String name);
+
+    /**
      * 查询赛事列表
      * 
      * @param event 赛事信息
