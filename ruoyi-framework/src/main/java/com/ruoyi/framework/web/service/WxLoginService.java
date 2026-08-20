@@ -1,5 +1,7 @@
 package com.ruoyi.framework.web.service;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,15 +49,17 @@ public class WxLoginService
      * 微信小程序登录
      *
      * @param code 微信登录code
-     * @return 小程序JWT令牌
+     * @return Map：token=小程序JWT令牌；isNewUser=是否首次登录（自动注册的新用户，前端据此弹出手机号授权引导）
      */
-    public String wxLogin(String code)
+    public Map<String, Object> wxLogin(String code)
     {
         String openid = getOpenid(code);
         Person person = personMapper.selectPersonByOpenid(openid);
+        boolean isNewUser = false;
         if (person == null)
         {
             // 首次登录自动注册人员
+            isNewUser = true;
             person = new Person();
             person.setOpenid(openid);
             person.setName("");
@@ -63,7 +67,10 @@ public class WxLoginService
             personMapper.insertPerson(person);
             person = personMapper.selectPersonByOpenid(openid);
         }
-        return wxTokenService.createToken(person.getId(), openid);
+        Map<String, Object> result = new HashMap<>();
+        result.put("token", wxTokenService.createToken(person.getId(), openid));
+        result.put("isNewUser", isNewUser);
+        return result;
     }
 
     /**

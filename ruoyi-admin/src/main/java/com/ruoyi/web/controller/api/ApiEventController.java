@@ -32,13 +32,18 @@ public class ApiEventController
     public ApiResult list(Event event, @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize)
     {
-        PageHelper.startPage(pageNum, pageSize);
-        List<Event> list = eventService.selectEventList(event);
+        // status 为空：小程序端过滤未发布赛事（status=0），仅展示报名中/进行中/已结束的赛事。
+        // 用 -1 哨兵在 SQL 层过滤（WHERE e.status != 0），保证 PageHelper 分页 total 与每页数量正确；
+        // 若在内存 removeIf 会因 total 含未发布导致分页永远加载不完。
+        Event query = event;
         if (event.getStatus() == null)
         {
-            // 小程序端过滤未发布赛事（状态0），仅展示报名中/进行中/已结束的赛事
-            list.removeIf(e -> e.getStatus() != null && e.getStatus() == 0);
+            query = new Event();
+            org.springframework.beans.BeanUtils.copyProperties(event, query);
+            query.setStatus(-1);
         }
+        PageHelper.startPage(pageNum, pageSize);
+        List<Event> list = eventService.selectEventList(query);
         return ApiResult.success("ok", Map.of("list", list, "total", new PageInfo<>(list).getTotal()));
     }
 

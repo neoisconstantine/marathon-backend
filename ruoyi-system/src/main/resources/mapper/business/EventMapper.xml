@@ -49,11 +49,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			<if test="signupOpen != null">
 				AND e.signup_open = #{signupOpen}
 			</if>
-			<if test="status != null">
+			<if test="status != null and status != -1">
 				AND e.status = #{status}
 			</if>
+			<if test="status == -1">
+				<!-- 小程序全部 tab：排除未发布（status=0） -->
+				AND e.status != 0
+			</if>
 		</where>
-        order by e.start_time desc
+        order by CASE WHEN e.status = 2 THEN 0 WHEN e.status = 1 THEN 1 ELSE 2 END, e.start_time desc
     </select>
     
     <insert id="insertEvent" parameterType="Event" useGeneratedKeys="true" keyProperty="id">

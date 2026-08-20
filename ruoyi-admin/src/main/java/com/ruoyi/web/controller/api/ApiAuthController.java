@@ -32,6 +32,7 @@ public class ApiAuthController
 
     /**
      * 微信登录（code换取小程序令牌）
+     * 返回 { token, isNewUser }：isNewUser=true 表示首次登录自动注册的新用户
      */
     @PostMapping("/wx-login")
     public ApiResult wxLogin(@RequestBody Map<String, String> body)
@@ -41,8 +42,7 @@ public class ApiAuthController
         {
             return ApiResult.error("code不能为空");
         }
-        String token = wxLoginService.wxLogin(code);
-        return ApiResult.success("ok", Collections.singletonMap("token", token));
+        return ApiResult.success("ok", wxLoginService.wxLogin(code));
     }
 
     /**
@@ -59,6 +59,29 @@ public class ApiAuthController
         }
         String phone = wxLoginService.getPhoneNumber(code);
         return ApiResult.success("ok", Collections.singletonMap("phone", phone));
+    }
+
+    /**
+     * 绑定手机号：将授权获取到的手机号回填到当前登录用户（首次登录引导授权后调用）
+     */
+    @PostMapping("/bind-phone")
+    public ApiResult bindPhone(@RequestBody Map<String, String> body)
+    {
+        String phone = body.get("phone");
+        if (StringUtils.isBlank(phone) || !phone.matches("1\\d{10}"))
+        {
+            return ApiResult.error("手机号格式不正确");
+        }
+        Long personId = WxSecurityUtils.getPersonId();
+        if (personId == null)
+        {
+            return ApiResult.error("未登录");
+        }
+        Person person = new Person();
+        person.setId(personId);
+        person.setPhone(phone);
+        personService.updatePerson(person);
+        return ApiResult.success("ok", null);
     }
 
     /**

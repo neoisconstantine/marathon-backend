@@ -31,9 +31,12 @@ public interface IRegistrationService
      *
      * @param personId 参赛人员ID
      * @param eventId 赛事ID
+     * @param name 姓名（报名表单填写，回填参赛用户资料）
+     * @param phone 手机号（报名表单填写，回填参赛用户资料并做手机号防重）
+     * @param idCard 身份证号（报名表单填写，回填参赛用户资料）
      * @return 结果
      */
-    public int createRegistration(Long personId, Long eventId);
+    public int createRegistration(Long personId, Long eventId, String name, String phone, String idCard);
 
     /**
      * 审核报名

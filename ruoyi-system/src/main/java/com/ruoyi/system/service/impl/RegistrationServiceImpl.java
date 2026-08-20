@@ -10,8 +10,10 @@ import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.Event;
+import com.ruoyi.system.domain.Person;
 import com.ruoyi.system.domain.Registration;
 import com.ruoyi.system.mapper.EventMapper;
+import com.ruoyi.system.mapper.PersonMapper;
 import com.ruoyi.system.mapper.RegistrationMapper;
 import com.ruoyi.system.service.IRegistrationService;
 
@@ -28,6 +30,9 @@ public class RegistrationServiceImpl implements IRegistrationService
 
     @Autowired
     private EventMapper eventMapper;
+
+    @Autowired
+    private PersonMapper personMapper;
 
     /**
      * 查询报名记录列表
@@ -61,12 +66,20 @@ public class RegistrationServiceImpl implements IRegistrationService
      *
      * @param personId 参赛人员ID
      * @param eventId 赛事ID
+     * @param name 姓名（报名表单填写，回填参赛用户资料）
+     * @param phone 手机号（回填参赛用户资料，并做"同一手机号同一赛事仅可报名一次"校验）
+     * @param idCard 身份证号（报名表单填写，回填参赛用户资料）
      * @return 结果
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int createRegistration(Long personId, Long eventId)
+    public int createRegistration(Long personId, Long eventId, String name, String phone, String idCard)
     {
+        // 0. 身份证格式校验（选填，但填了必须合法：18位，末位可为X）
+        if (StringUtils.isNotBlank(idCard) && !idCard.matches("\\d{17}[\\dXx]"))
+        {
+            throw new ServiceException("身份证号码格式不正确");
+        }
         // 1. 校验赛事存在
         Event event = eventMapper.selectEventById(eventId);
         if (StringUtils.isNull(event))
@@ -104,6 +117,25 @@ public class RegistrationServiceImpl implements IRegistrationService
         if (StringUtils.isNotNull(exist) && !Integer.valueOf(2).equals(exist.getStatus()))
         {
             throw new ServiceException("请勿重复报名");
+        }
+        // 6.5 手机号防重校验：同一手机号同一赛事仅可报名一次（已退赛允许重新报名）
+        if (StringUtils.isNotBlank(phone))
+        {
+            Registration phoneDup = registrationMapper.selectByEventAndPhone(eventId, phone);
+            if (StringUtils.isNotNull(phoneDup) && !Integer.valueOf(2).equals(phoneDup.getStatus()))
+            {
+                throw new ServiceException("该手机号已报名该赛事");
+            }
+        }
+        // 6.6 报名信息回填：姓名/手机号/身份证补充到参赛用户资料（动态SQL只更新非空字段）
+        if (StringUtils.isNotBlank(name) || StringUtils.isNotBlank(phone) || StringUtils.isNotBlank(idCard))
+        {
+            Person person = new Person();
+            person.setId(personId);
+            person.setName(name);
+            person.setPhone(phone);
+            person.setIdCard(idCard);
+            personMapper.updatePerson(person);
         }
         // 7. 报名落库：并发极端情况下依赖 uk_person_event 唯一索引兜底
         Registration registration = new Registration();

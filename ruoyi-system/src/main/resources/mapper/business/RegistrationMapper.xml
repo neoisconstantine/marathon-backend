@@ -71,6 +71,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectRegistrationVo"/>
         where r.event_id = #{eventId} and r.bib = #{bib} limit 1
     </select>
+
+    <select id="selectByEventAndPhone" resultMap="RegistrationResult">
+        <include refid="selectRegistrationVo"/>
+        where r.event_id = #{eventId} and p.phone = #{phone} limit 1
+    </select>
     
     <insert id="insertRegistration" parameterType="Registration" useGeneratedKeys="true" keyProperty="id">
         insert into registration (

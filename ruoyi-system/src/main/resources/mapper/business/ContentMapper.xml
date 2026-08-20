@@ -55,7 +55,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectNoticeList" resultMap="ContentResult">
         <include refid="selectContentVo"/>
         where type = 2 and status = 1 and (start_time is null or start_time &lt;= now()) and (end_time is null or end_time &gt;= now())
-        order by sort asc, id desc
+        order by sort asc, id desc limit 5
     </select>
     
     <insert id="insertContent" parameterType="Content" useGeneratedKeys="true" keyProperty="id">
