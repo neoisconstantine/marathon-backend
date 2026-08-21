@@ -112,27 +112,39 @@ public class RegistrationServiceImpl implements IRegistrationService
         {
             throw new ServiceException("名额已满");
         }
-        // 6. 重复报名校验：已退赛（2）允许重新报名
+        // 6. 重复报名校验：已退赛（2）不允许重新报名
         Registration exist = registrationMapper.selectByPersonAndEvent(personId, eventId);
-        if (StringUtils.isNotNull(exist) && !Integer.valueOf(2).equals(exist.getStatus()))
+        if (StringUtils.isNotNull(exist))
         {
+            if (Integer.valueOf(2).equals(exist.getStatus()))
+            {
+                throw new ServiceException("您已退赛，无法再次报名该赛事");
+            }
             throw new ServiceException("请勿重复报名");
         }
-        // 6.5 手机号防重校验：同一手机号同一赛事仅可报名一次（已退赛允许重新报名）
+        // 6.5 手机号防重校验：同一手机号同一赛事仅可报名一次（已退赛不允许重新报名）
         if (StringUtils.isNotBlank(phone))
         {
             Registration phoneDup = registrationMapper.selectByEventAndPhone(eventId, phone);
-            if (StringUtils.isNotNull(phoneDup) && !Integer.valueOf(2).equals(phoneDup.getStatus()))
+            if (StringUtils.isNotNull(phoneDup))
             {
+                if (Integer.valueOf(2).equals(phoneDup.getStatus()))
+                {
+                    throw new ServiceException("该手机号已退赛，无法再次报名该赛事");
+                }
                 throw new ServiceException("该手机号已报名该赛事");
             }
         }
-        // 6.55 身份证防重校验：同一身份证号同一赛事仅可报名一次（已退赛允许重新报名）
+        // 6.55 身份证防重校验：同一身份证号同一赛事仅可报名一次（已退赛不允许重新报名）
         if (StringUtils.isNotBlank(idCard))
         {
             Registration idCardDup = registrationMapper.selectByEventAndIdCard(eventId, idCard);
-            if (StringUtils.isNotNull(idCardDup) && !Integer.valueOf(2).equals(idCardDup.getStatus()))
+            if (StringUtils.isNotNull(idCardDup))
             {
+                if (Integer.valueOf(2).equals(idCardDup.getStatus()))
+                {
+                    throw new ServiceException("该身份证号已退赛，无法再次报名该赛事");
+                }
                 throw new ServiceException("该身份证号已报名该赛事");
             }
         }
@@ -365,7 +377,7 @@ public class RegistrationServiceImpl implements IRegistrationService
         // 4. 报名落库：并发极端情况下依赖 uk_person_event 唯一索引兜底
         if (StringUtils.isNull(registration.getStatus()))
         {
-            registration.setStatus(0); // 0待审核
+        registration.setStatus(1); // 1已审核（支付成功默認审核通过）
         }
         registration.setCreateTime(DateUtils.getNowDate());
         try

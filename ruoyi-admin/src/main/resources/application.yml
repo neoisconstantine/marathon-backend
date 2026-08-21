@@ -6,17 +6,17 @@ ruoyi:
   version: 3.9.2
   # 版权年份
   copyrightYear: 2026
-  # 文件路径 示例（ Windows配置D:/ruoyi/uploadPath，Linux配置 /home/ruoyi/uploadPath）
-  profile: D:/ruoyi/uploadPath
+  # 文件路径（通过环境变量或外部配置覆盖，Windows: D:/ruoyi/uploadPath，Linux: /home/ruoyi/uploadPath）
+  profile: ${RUOYI_PROFILE:D:/ruoyi/uploadPath}
   # 获取ip地址开关
   addressEnabled: false
   # 验证码类型 math 数字计算 char 字符验证
   captchaType: math
 
-# 开发环境配置
+# 服务器配置
 server:
   # 服务器的HTTP端口，默认为8080
-  port: 8080
+  port: 7070
   servlet:
     # 应用的访问路径
     context-path: /
@@ -51,8 +51,13 @@ spring:
   messages:
     # 国际化资源文件路径
     basename: i18n/messages
+  # 激活的环境配置（dev:开发, prod:生产）
+  # 开发环境：application-dev.yml（本地配置，不提交git）
+  # 生产环境：application-prod.yml（生产配置，不提交git）
+  # 启动时指定：--spring.profiles.active=prod
   profiles:
-    active: druid
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+    include: druid
   # 文件上传
   servlet:
     multipart:
